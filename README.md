@@ -10,6 +10,7 @@ This repository contains detailed lecture notes and assignments for the Digital 
 4. Z-Transform
 5. System Analysis
 6. Realization
+7. Stability of Discrete-Time Systems
 
 ## How to Run
 

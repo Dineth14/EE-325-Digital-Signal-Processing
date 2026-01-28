@@ -11,6 +11,7 @@ This repository contains detailed lecture notes and assignments for the Digital 
 5. System Analysis
 6. Realization
 7. Stability of Discrete-Time Systems
+8. Frequency-Domain Analysis – DTFT and DFS
 
 ## How to Run
 

@@ -15,7 +15,7 @@ This repository contains detailed lecture notes and assignments for the Digital 
 
 1. Clone the repository
 
-git clone https://github.com/your-username/EE-325-Digital-Signal-Processing.git
+git clone https://github.com/Dineth14/EE-325-Digital-Signal-Processing.git
 
 2. Open the assignment in MATLAB
 3. Run the script   

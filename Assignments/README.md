@@ -6,11 +6,17 @@ This repository contains EE-325-Digital-Signal-Processing learning material and 
 EE-325-Digital-Signal-Processing/
 
 ├── Assignments/          # Contains all assignments and related resources
-   |- code implementations
-   |- answer scripts
+│   ├── Assignment_1_Sampling_and_Aliasing
+│   ├── Assignment_2_Time_Domain_Analysis
+│   ├── Assignment_3_Discrete_Time_Convolution
+│   ├── Assignment_4_Z_Transform
+│   ├── Assignment_5_System_Analysis
+│   ├── Assignment_6_Realization
+│   ├── Assignment_7_Stability_of_Discrete_Time_Systems
+│   └── Assignment_8_Frequency_Domain_Analysis
 ├── Lectures/             # Lecture notes and presentations
 ├── Labs/                 # Lab exercises and instructions
-├── README.md          # This README file
+├── README.md             # This README file
 ```
 
 ### How to Use This Repository

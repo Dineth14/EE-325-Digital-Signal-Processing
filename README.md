@@ -4,14 +4,14 @@ This repository contains detailed lecture notes and assignments for the Digital 
 
 ### Assignments
 
-1. Sampling and Aliasing
-2. Time Domain Analysis of LTI Systems
-3. Discrete Time Convolution
-4. Z-Transform
-5. System Analysis
-6. Realization
-7. Stability of Discrete-Time Systems
-8. Frequency-Domain Analysis – DTFT and DFS
+1. [Sampling and Aliasing](Assignments/Assignment_1_Sampling_and_Aliasing)
+2. [Time Domain Analysis of LTI Systems](Assignments/Assignment_2_Time_Domain_Analysis)
+3. [Discrete Time Convolution](Assignments/Assignment_3_Discrete_Time_Convolution)
+4. [Z-Transform](Assignments/Assignment_4_Z_Transform)
+5. [System Analysis](Assignments/Assignment_5_System_Analysis)
+6. [Realization](Assignments/Assignment_6_Realization)
+7. [Stability of Discrete-Time Systems](Assignments/Assignment_7_Stability_of_Discrete_Time_Systems)
+8. [Frequency-Domain Analysis – DTFT and DFS](Assignments/Assignment_8_Frequency_Domain_Analysis)
 
 ## How to Run
 

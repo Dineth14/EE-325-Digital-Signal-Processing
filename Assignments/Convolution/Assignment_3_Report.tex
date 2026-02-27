@@ -1,0 +1,64 @@
+\documentclass[11pt, a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\title{EE 325 Digital Signal Processing \\ Assignment 3: Discrete Time Convolution}
+\author{PERERA J.D.T. \\ E/21/291}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Objective}
+Verify the calculation of linear convolution for discrete-time sequences using numerical tools.
+
+\section{Q1: Linear Convolution}
+\textbf{Sequences:}
+\begin{itemize}
+    \item $x[n] = [1, 2, 1]$
+    \item $h[n] = [1, -1, 2]$
+\end{itemize}
+
+\textbf{Convolution $y[n] = x[n] * h[n]$:}
+\begin{itemize}
+    \item Length of $y$: $L_x + L_h - 1 = 3 + 3 - 1 = 5$.
+    \item Result:
+    \begin{itemize}
+        \item $y[0] = 1$
+        \item $y[1] = 1$
+        \item $y[2] = 1$
+        \item $y[3] = 3$
+        \item $y[4] = 2$
+    \end{itemize}
+    \item \textbf{Verified Output:} $[1, 1, 1, 3, 2]$
+\end{itemize}
+
+\section{Q2: Cascade Connection of Systems}
+\textbf{Systems:}
+\begin{itemize}
+    \item $h_1[n] = [1, 1]$
+    \item $h_2[n] = [1, -1, 1]$
+\end{itemize}
+
+\textbf{Equivalent Impulse Response $h_{eq}[n]$:}
+For cascade systems, $h_{eq}[n] = h_1[n] * h_2[n]$.
+\begin{itemize}
+    \item Length: $2 + 3 - 1 = 4$.
+    \item Calculation:
+    \begin{itemize}
+        \item $h_{eq}[0] = 1$
+        \item $h_{eq}[1] = 0$
+        \item $h_{eq}[2] = 0$
+        \item $h_{eq}[3] = 1$
+    \end{itemize}
+    \item \textbf{Verified Output:} $[1, 0, 0, 1]$
+\end{itemize}
+
+\section{Conclusion}
+The computational results confirm that numerical convolution matches the analytical expectations for both single-stage and cascade LTI systems.
+
+\end{document}

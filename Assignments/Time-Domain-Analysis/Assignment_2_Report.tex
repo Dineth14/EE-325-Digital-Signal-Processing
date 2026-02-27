@@ -1,0 +1,55 @@
+\documentclass[11pt, a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\title{EE 325 Digital Signal Processing \\ Assignment 2: Time Domain Analysis of LTI Systems}
+\author{PERERA J.D.T. \\ E/21/291}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Objective}
+Analyze the time-domain response of a Linear Time-Invariant (LTI) system using difference equations in Python.
+
+\section{System Description}
+The system is defined by the first-order difference equation:
+$$y[n] = 0.5 y[n-1] + x[n]$$
+Rearranging terms, this corresponds to the system:
+$$y[n] - 0.5 y[n-1] = x[n]$$
+Impulse Response expectation: $h[n] = (0.5)^n u[n]$.
+
+\section{Simulation Results}
+\subsection{1. Impulse Response ($h[n]$)}
+\begin{itemize}
+    \item \textbf{Input:} $x[n] = \delta[n]$ (Unit Impulse).
+    \item \textbf{Method:} Iteratively inferred $y[n]$ with $y[-1]=0$.
+    \item \textbf{Result:}
+    \begin{itemize}
+        \item $n=0: y[0] = 0.5(0) + 1 = 1$
+        \item $n=1: y[1] = 0.5(1) + 0 = 0.5$
+        \item $n=2: y[2] = 0.5(0.5) + 0 = 0.25$
+    \end{itemize}
+    \item \textbf{Verification:} Follows the theoretical decay $h[n] = (0.5)^n$.
+\end{itemize}
+
+\subsection{2. Step Response ($s[n]$)}
+\begin{itemize}
+    \item \textbf{Input:} $x[n] = u[n]$ (Unit Step).
+    \item \textbf{Result:} Accumulates the impulse response.
+    \begin{itemize}
+        \item $n=0: 1$
+        \item $n=1: 1 + 0.5 = 1.5$
+        \item $n=2: 1.5 + 0.25 = 1.75$
+    \end{itemize}
+    \item \textbf{Steady State:} As $n \to \infty$, $s[n] \to \frac{1}{1 - 0.5} = 2$.
+\end{itemize}
+
+\section{Conclusion}
+The simulation successfully implements the recursive difference equation and visualizes the system's characteristic exponential decay (Stable IIR system).
+
+\end{document}

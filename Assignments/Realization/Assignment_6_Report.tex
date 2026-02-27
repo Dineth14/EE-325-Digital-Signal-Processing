@@ -1,0 +1,55 @@
+\documentclass[11pt, a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\title{EE 325 Digital Signal Processing \\ Assignment 6: Realization of Discrete-Time Systems}
+\author{PERERA J.D.T. \\ E/21/291}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{1. Direct Form I Realization}
+\textbf{Difference Equation:}
+$$y[n] - 1.1y[n-1] + 0.3y[n-2] = x[n] + 0.5x[n-1]$$
+$$y[n] = 1.1y[n-1] - 0.3y[n-2] + x[n] + 0.5x[n-1]$$
+
+\textbf{Block Diagram (Direct Form I):}
+Direct Form I implements the feedforward part ($x[n]$ terms) and feedback part ($y[n]$ terms) separately, connected in cascade.
+
+Specifically for $y[n] = 1.1y[n-1] - 0.3y[n-2] + ...$:
+\begin{itemize}
+    \item Tap from $y[n-1]$ is multiplied by $1.1$.
+    \item Tap from $y[n-2]$ is multiplied by $-0.3$.
+\end{itemize}
+
+\textbf{Delay Elements:} 3 total ($1$ for $x$, $2$ for $y$). Note: This is non-canonic.
+
+\section{2. Direct Form II Realization}
+\textbf{(a) Direct Form II - Canonic:}
+Direct Form II shares the delay elements between the feedforward and feedback paths. We introduce an intermediate variable $w[n]$.
+$$w[n] = x[n] + 1.1w[n-1] - 0.3w[n-2]$$
+$$y[n] = w[n] + 0.5w[n-1]$$
+
+\textbf{(b) Memory Comparison:}
+\begin{itemize}
+    \item \textbf{Direct Form I:} Requires $M + N = 1 + 2 = 3$ delay elements ($x[n-1]$, $y[n-1]$, $y[n-2]$).
+    \item \textbf{Direct Form II:} Requires $\max(M, N) = \max(1, 2) = 2$ delay elements ($w[n-1]$, $w[n-2]$).
+    \item \textbf{Conclusion:} Direct Form II is more memory efficient (Canonical).
+\end{itemize}
+
+\textbf{(c) Numerical Differences:}
+Direct Form II is more sensitive to quantization effects (overflow/round-off) at the internal nodes ($w[n]$) compared to Direct Form I, especially for high-Q poles, because the poles solely determine the magnitude of the intermediate variable $w[n]$ before zeros can attenuate it.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{filter_comparison.png}
+    \caption{Filter Output Comparison}
+    \label{fig:filter_comp}
+\end{figure}
+
+\end{document}

@@ -1,0 +1,96 @@
+\documentclass[11pt, a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\title{EE 325 Digital Signal Processing \\ Assignment 5: System Characterization via z-Transform}
+\author{PERERA J.D.T. \\ E/21/291}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{1. Transfer Function from Difference Equation}
+\textbf{System:}
+$$y[n] - 1.1y[n-1] + 0.3y[n-2] = x[n] + 0.5x[n-1]$$
+
+\textbf{(a) Derive H(z):}
+Taking the z-transform of both sides:
+$$Y(z) - 1.1z^{-1}Y(z) + 0.3z^{-2}Y(z) = X(z) + 0.5z^{-1}X(z)$$
+$$Y(z) [1 - 1.1z^{-1} + 0.3z^{-2}] = X(z) [1 + 0.5z^{-1}]$$
+
+The transfer function $H(z) = \frac{Y(z)}{X(z)}$ is:
+$$H(z) = \frac{1 + 0.5z^{-1}}{1 - 1.1z^{-1} + 0.3z^{-2}}$$
+
+\textbf{(b) Coefficients:}
+Expressing in the form $H(z) = \frac{b_0 + b_1 z^{-1} + \dots}{1 + a_1 z^{-1} + a_2 z^{-2}}$:
+$$H(z) = \frac{1 + 0.5z^{-1}}{1 - 1.1z^{-1} + 0.3z^{-2}}$$
+
+Coefficients:
+\begin{itemize}
+    \item Numerator $\{b_k\}$: $b_0 = 1, b_1 = 0.5$
+    \item Denominator $\{a_k\}$: $a_0=1, a_1 = -1.1, a_2 = 0.3$
+\end{itemize}
+
+\section{2. Pole-Zero Analysis and Stability}
+
+\textbf{(a) Poles and Zeros:}
+Zeros (roots of numerator $1 + 0.5z^{-1}$):
+$$1 + 0.5z^{-1} = 0 \implies z = -0.5$$
+Zero at $z = -0.5$.
+
+Poles (roots of denominator $1 - 1.1z^{-1} + 0.3z^{-2}$):
+Multiply by $z^2$: $z^2 - 1.1z + 0.3 = 0$.
+Roots using quadratic formula:
+$$z = \frac{1.1 \pm \sqrt{1.1^2 - 4(1)(0.3)}}{2} = \frac{1.1 \pm \sqrt{1.21 - 1.2}}{2} = \frac{1.1 \pm \sqrt{0.01}}{2}$$
+$$z = \frac{1.1 \pm 0.1}{2}$$
+$p_1 = \frac{1.2}{2} = 0.6$\\
+$p_2 = \frac{1.0}{2} = 0.5$
+
+Poles at $z = 0.6$ and $z = 0.5$.
+
+\textbf{(b) Stability:}
+A causal LTI system is BIBO stable if all poles lie \textbf{strictly inside the unit circle} ($|p| < 1$).
+Here, poles are $0.5$ and $0.6$.
+Since $|0.5| < 1$ and $|0.6| < 1$, the system is \textbf{Stable}.
+
+\textbf{(c) System Type:}
+The system has poles (denominator order $> 0$), meaning $y[n]$ depends on past outputs. Thus, it has an impulse response of infinite duration. The system is \textbf{IIR (Infinite Impulse Response)}.
+
+\section{3. Frequency Response}
+\textbf{Gain Analysis:}
+\begin{itemize}
+    \item \textbf{DC Gain ($\omega = 0, z = 1$):} \\
+    $$H(e^{j0}) = H(1) = \frac{1 + 0.5}{1 - 1.1 + 0.3} = \frac{1.5}{0.2} = 7.5$$ \\
+    Magnitude: $20 \log_{10}(7.5) \approx 17.5$ dB.
+    
+    \item \textbf{Nyquist Gain ($\omega = \pi, z = -1$):} \\
+    $$H(e^{j\pi}) = H(-1) = \frac{1 - 0.5}{1 + 1.1 + 0.3} = \frac{0.5}{2.4} \approx 0.208$$ \\
+    Magnitude: $20 \log_{10}(0.208) \approx -13.6$ dB.
+\end{itemize}
+
+\textbf{Pole-Zero Influence:}
+\begin{itemize}
+    \item The poles are at $z=0.5, 0.6$. These are positive real poles, closest to the unit circle at $\omega=0$ ($z=1$).
+    \item This proximity to $\omega=0$ causes a \textbf{rise in magnitude at low frequencies} (Low Pass behavior), which explains the high DC gain.
+    \item The zero at $z=-0.5$ is on the negative real axis ($\omega=\pi$). This suppresses high frequencies, contributing to the low magnitude at $\pi$.
+\end{itemize}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{frequency_response.png}
+    \caption{Frequency Response}
+    \label{fig:freq_res}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{pole_zero_plot.png}
+    \caption{Pole-Zero Plot}
+    \label{fig:pz_plot}
+\end{figure}
+
+\end{document}

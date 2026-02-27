@@ -14,7 +14,8 @@ EE-325-Digital-Signal-Processing/
 │   ├── Assignment_6_Realization
 │   ├── Assignment_7_Stability_of_Discrete_Time_Systems
 │   ├── Assignment_8_Frequency_Domain_Analysis
-│   └── Assignment_9_Discrete_Fourier_Transform
+│   ├── Assignment_9_Discrete_Fourier_Transform
+│   └── Assignment_10_Fast_Fourier_Transform
 ├── Lectures/             # Lecture notes and presentations
 ├── Labs/                 # Lab exercises and instructions
 ├── README.md             # This README file

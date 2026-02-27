@@ -13,6 +13,7 @@ This repository contains detailed lecture notes and assignments for the Digital 
 7. [Stability of Discrete-Time Systems](Assignments/Assignment_7_Stability_of_Discrete_Time_Systems)
 8. [Frequency-Domain Analysis – DTFT and DFS](Assignments/Assignment_8_Frequency_Domain_Analysis)
 9. [Discrete Fourier Transform (DFT) and Properties](Assignments/Assignment_9_Discrete_Fourier_Transform)
+10. [Fast Fourier Transform (FFT)](Assignments/Assignment_10_Fast_Fourier_Transform)
 
 ## How to Run
 

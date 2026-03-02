@@ -14,6 +14,10 @@ This repository contains detailed lecture notes and assignments for the Digital 
 8. [Frequency-Domain Analysis – DTFT and DFS](Assignments/Assignment_8_Frequency_Domain_Analysis)
 9. [Discrete Fourier Transform (DFT) and Properties](Assignments/Assignment_9_Discrete_Fourier_Transform)
 10. [Fast Fourier Transform (FFT)](Assignments/Assignment_10_Fast_Fourier_Transform)
+11. [Short-Time Fourier Transform (STFT) and Spectrograms](Assignments/Assignment_11_Short_Time_Fourier_Transform)
+12. [IIR Filter Design – Impulse Invariance and Bilinear Transform](Assignments/Assignment_12_IIR_Filter_Design)
+13. [FIR Filter Design – Window and Frequency Sampling](Assignments/Assignment_13_FIR_Filter_Design)
+14. [Spectral Estimation and Power Spectrum Analysis](Assignments/Assignment_14_Spectral_Estimation)
 
 ### Laboratories
 

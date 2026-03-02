@@ -15,6 +15,10 @@ This repository contains detailed lecture notes and assignments for the Digital 
 9. [Discrete Fourier Transform (DFT) and Properties](Assignments/Assignment_9_Discrete_Fourier_Transform)
 10. [Fast Fourier Transform (FFT)](Assignments/Assignment_10_Fast_Fourier_Transform)
 
+### Laboratories
+
+1. [Laboratory 1: Frequency Estimation](Labs/Lab_01_Frequency_Estimation)
+
 ## How to Run
 
 1. Clone the repository

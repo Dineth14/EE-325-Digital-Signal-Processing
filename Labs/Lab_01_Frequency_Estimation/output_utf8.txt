@@ -1,0 +1,8 @@
+﻿Frequencies (Hz): f1=12, f2=39, f3=71
+Task 3 - Estimated Frequencies for Signal 1 from DFT: [11.99940003 38.9980501  70.99645018] Hz
+Task 4 - Estimated Frequencies for Signal 1 from STFT: [11.71875 39.0625  71.09375] Hz
+Task 5 - Based on GCD(12, 39, 71)=1 Hz, expected fundamental period is 1 second.
+Task 7 - Estimated Frequencies for Signal 1 from Periodogram: [11.99940003 38.9980501  70.99645018] Hz
+Task 8 - Pisarenko decomposition size: for 3 real sinusoids, 6 complex exponentials. M >= 7.
+Task 9 - Estimated Frequencies for Signal 1 from MUSIC: [12.01201201 39.03903904 70.97097097] Hz
+Task 10 - Estimated Frequencies for Signal 1 from AR model: [12.  38.8 70.7 96.9] Hz

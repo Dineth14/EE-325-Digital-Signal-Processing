@@ -18,6 +18,7 @@ This repository contains detailed lecture notes and assignments for the Digital 
 ### Laboratories
 
 1. [Laboratory 1: Frequency Estimation](Labs/Lab_01_Frequency_Estimation)
+2. [Laboratory 2: Filter Design Analysis](Labs/Lab_02_Filter_Design)
 
 ## How to Run
 

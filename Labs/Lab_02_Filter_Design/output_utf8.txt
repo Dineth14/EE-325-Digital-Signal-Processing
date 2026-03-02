@@ -1,0 +1,22 @@
+﻿--- Filter Specifications ---
+Passband cutoff w_p = 114.22 rad/s
+Stopband cutoff w_s = 176.78 rad/s
+Passband cutoff f_p = 18.18 Hz
+Stopband cutoff f_s = 28.14 Hz
+Max stopband gain delta_s = 0.1 (Rs = 20.00 dB)
+Min passband gain delta_p = 0.9 (Rp = 0.92 dB)
+
+--- IIR Filter Orders ---
+Butterworth Order: 7
+Chebyshev Type I Order: 4
+Chebyshev Type II Order: 4
+
+--- FIR Filter Orders ---
+Boxcar (Rectangular) Order: 201
+Bartlett (Triangular) Order: 403
+Hann Order: 403
+Hamming Order: 403
+Blackman Order: 603
+
+Generated filter plots.
+Generated noise and chirp plots.

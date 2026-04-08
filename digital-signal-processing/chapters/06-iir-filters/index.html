@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Ch 6 — IIR Filter Design</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"/>
+  <link rel="stylesheet" href="../../assets/css/main.css"/>
+  <link rel="stylesheet" href="../../assets/css/math.css"/>
+  <link rel="stylesheet" href="../../assets/css/animations.css"/>
+</head>
+<body>
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-header"><a href="../../index.html" class="sidebar-logo">DSP<span class="accent">book</span></a></div>
+  <ul class="sidebar-tree" id="sidebarTree"></ul>
+</nav>
+<main class="content" id="mainContent">
+
+<section class="chapter-hero">
+  <canvas id="heroCanvas"></canvas>
+  <div class="hero-overlay">
+    <span class="hero-chip">Chapter 6</span>
+    <h1>IIR Filter Design</h1>
+    <p class="hero-sub">Design recursive filters from analog prototypes using the bilinear transform, and explore stability.</p>
+  </div>
+</section>
+
+<section class="section" id="objectives">
+  <h2>Learning Objectives</h2>
+  <ul class="objectives-list">
+    <li class="objective-item"><input type="checkbox" id="obj1"/><label for="obj1">Explain the advantages and disadvantages of IIR filters compared to FIR filters.</label></li>
+    <li class="objective-item"><input type="checkbox" id="obj2"/><label for="obj2">Design Butterworth and Chebyshev Type I lowpass filters from analog prototypes.</label></li>
+    <li class="objective-item"><input type="checkbox" id="obj3"/><label for="obj3">Apply the bilinear transform with frequency pre-warping to convert analog to digital filters.</label></li>
+    <li class="objective-item"><input type="checkbox" id="obj4"/><label for="obj4">Determine BIBO stability from pole locations and relate to the unit circle.</label></li>
+  </ul>
+</section>
+
+<section class="section" id="theory">
+  <h2>Theory</h2>
+
+  <div class="accordion">
+    <button class="accordion-btn" aria-expanded="false">§6.1 IIR vs. FIR: Tradeoffs</button>
+    <div class="accordion-body">
+      <p>An <strong>IIR (Infinite Impulse Response)</strong> filter has a transfer function with both poles and zeros:</p>
+      <div class="equation-box">$$H(z)=\frac{\sum_{k=0}^{M}b_k z^{-k}}{1+\sum_{k=1}^{N}a_k z^{-k}}$$</div>
+      <p>Because of the feedback (denominator terms), IIR filters can achieve sharp frequency selectivity with far fewer coefficients than FIR filters.</p>
+      <table class="math-table">
+        <thead><tr><th>Property</th><th>FIR</th><th>IIR</th></tr></thead>
+        <tbody>
+          <tr><td>Impulse response</td><td>Finite length</td><td>Infinite (decaying)</td></tr>
+          <tr><td>Linear phase</td><td>Guaranteed (symmetric)</td><td>Not possible in general</td></tr>
+          <tr><td>Stability</td><td>Always stable</td><td>Must check: all poles inside UC</td></tr>
+          <tr><td>Efficiency</td><td>Higher order needed</td><td>Lower order for same spec</td></tr>
+          <tr><td>Design method</td><td>Windowed sinc, Parks-McClellan</td><td>Analog prototype + transform</td></tr>
+        </tbody>
+      </table>
+      <p>The IIR approach is particularly effective for standard lowpass/highpass/bandpass specifications where decades of analog filter theory (Butterworth, Chebyshev, Elliptic) can be leveraged.</p>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <button class="accordion-btn" aria-expanded="false">§6.2 Analog Prototype Filters</button>
+    <div class="accordion-body">
+      <p>The IIR design pipeline begins with a <strong>normalized analog lowpass prototype</strong> $H_a(s)$ with cutoff frequency $\Omega_c = 1$ rad/s.</p>
+
+      <h4>Butterworth Filter</h4>
+      <p>The Butterworth filter provides <em>maximally flat magnitude</em> in the passband. The squared magnitude:</p>
+      <div class="equation-box">$$|H_a(j\Omega)|^2=\frac{1}{1+\left(\frac{\Omega}{\Omega_c}\right)^{2N}}$$</div>
+      <p>The poles of $H_a(s)H_a(-s)$ lie on a circle of radius $\Omega_c$ in the $s$-plane. We keep the left-half-plane poles for stability:</p>
+      <div class="equation-box">$$s_k=\Omega_c\, e^{j\pi(2k+N+1)/(2N)},\quad k=0,1,\dots,N-1$$</div>
+
+      <h4>Chebyshev Type I</h4>
+      <p>Chebyshev I filters have <em>equiripple passband</em> and monotonic stopband, achieving a sharper transition for the same order:</p>
+      <div class="equation-box">$$|H_a(j\Omega)|^2=\frac{1}{1+\epsilon^2\, T_N^2\!\left(\frac{\Omega}{\Omega_c}\right)}$$</div>
+      <p>where $T_N$ is the $N$-th order Chebyshev polynomial of the first kind, and $\epsilon$ controls passband ripple: $R_p = 10\log_{10}(1+\epsilon^2)$ dB.</p>
+
+      <h4>Chebyshev Type II (Inverse)</h4>
+      <p>Has a <em>flat passband</em> but equiripple stopband — useful when passband flatness is critical.</p>
+
+      <h4>Elliptic (Cauer)</h4>
+      <p>Equiripple in <em>both</em> passband and stopband — gives the absolute minimum order for given specs, at the cost of the most complex design equations.</p>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <button class="accordion-btn" aria-expanded="false">§6.3 The Bilinear Transform</button>
+    <div class="accordion-body">
+      <p>The <strong>bilinear transform</strong> maps the entire $s$-plane to the $z$-plane via:</p>
+      <div class="equation-box">$$s = \frac{2}{T}\cdot\frac{1-z^{-1}}{1+z^{-1}} \quad\Longleftrightarrow\quad z = \frac{1+\frac{sT}{2}}{1-\frac{sT}{2}}$$</div>
+      <p>Key mapping properties:</p>
+      <ul>
+        <li>The $j\Omega$ axis maps to the <strong>unit circle</strong> $|z|=1$.</li>
+        <li>The left half-plane ($\text{Re}(s)&lt;0$) maps to $|z|&lt;1$ — <strong>stability is preserved</strong>.</li>
+        <li>The right half-plane maps to $|z|&gt;1$.</li>
+      </ul>
+
+      <h4>Frequency Warping</h4>
+      <p>The bilinear transform introduces a nonlinear compression of the frequency axis:</p>
+      <div class="equation-box">$$\Omega = \frac{2}{T}\tan\left(\frac{\omega}{2}\right) \quad\Longleftrightarrow\quad \omega = 2\arctan\left(\frac{\Omega T}{2}\right)$$</div>
+      <p>To ensure the digital filter's critical frequency matches the specification, we <strong>pre-warp</strong>:</p>
+      <div class="equation-box">$$\Omega_c = \frac{2}{T}\tan\left(\frac{\omega_c}{2}\right)$$</div>
+      <p>This pre-warped $\Omega_c$ is used as the cutoff when designing the analog prototype.</p>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <button class="accordion-btn" aria-expanded="false">§6.4 Realization Structures</button>
+    <div class="accordion-body">
+      <p>IIR filters can be realized using several standard structures. The general difference equation:</p>
+      <div class="equation-box">$$y[n]=\sum_{k=0}^{M}b_k\, x[n-k]-\sum_{k=1}^{N}a_k\, y[n-k]$$</div>
+
+      <h4>Direct Form I</h4>
+      <p>Implements the numerator and denominator as two separate FIR sections in cascade. Requires $M+N$ delay elements.</p>
+
+      <h4>Direct Form II</h4>
+      <p>Shares a single delay line for both numerator and denominator — requires only $\max(M,N)$ delay elements. Also called the <em>canonical form</em>.</p>
+
+      <h4>Cascade (Second-Order Sections)</h4>
+      <p>Factors $H(z)$ into a product of <strong>biquad sections</strong>:</p>
+      <div class="equation-box">$$H(z)=\prod_{k}\frac{b_{0k}+b_{1k}z^{-1}+b_{2k}z^{-2}}{1+a_{1k}z^{-1}+a_{2k}z^{-2}}$$</div>
+      <p>This is the <strong>preferred</strong> implementation in practice because it minimizes coefficient sensitivity and finite-precision effects.</p>
+
+      <h4>Parallel Form</h4>
+      <p>Decomposes $H(z)$ using partial fractions into a sum of second-order sections.</p>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <button class="accordion-btn" aria-expanded="false">§6.5 Stability of IIR Systems</button>
+    <div class="accordion-body">
+      <p>A causal LTI system is <strong>BIBO stable</strong> if and only if all poles of $H(z)$ lie <em>strictly inside</em> the unit circle:</p>
+      <div class="equation-box">$$|p_k| < 1, \quad \forall\, k$$</div>
+
+      <h4>Stability Tests</h4>
+      <ul>
+        <li><strong>Pole inspection:</strong> Factor the denominator and check all root magnitudes.</li>
+        <li><strong>Jury test:</strong> An algebraic test on the denominator coefficients (analogous to the Routh test for continuous systems).</li>
+        <li><strong>Schur-Cohn test:</strong> Uses a recursion on reflection coefficients.</li>
+      </ul>
+
+      <h4>Marginal Stability</h4>
+      <p>If poles lie <em>on</em> the unit circle ($|p_k|=1$) with multiplicity 1, the system is <strong>marginally stable</strong> — bounded input may produce unbounded output. If any repeated pole is on the unit circle, the system is <strong>unstable</strong>.</p>
+
+      <h4>Effect of Coefficient Quantization</h4>
+      <p>In fixed-point implementations, small changes in coefficients can shift poles outside the unit circle, causing instability. Cascade biquad forms are less sensitive than direct forms.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ SIMULATIONS ═══════════ -->
+
+<section class="section" id="sim1">
+  <h2>Simulation 6.1 — IIR Filter Designer</h2>
+  <p>Design Butterworth and Chebyshev lowpass filters. Observe the magnitude response, pole-zero plot, impulse response, and filter coefficients in real time.</p>
+  <div class="sim-container">
+    <canvas id="iirCanvas"></canvas>
+    <div class="sim-controls">
+      <label>Type
+        <select id="iirType"><option value="butter" selected>Butterworth</option><option value="cheby1">Chebyshev I</option></select>
+      </label>
+      <label>Order<input type="range" id="iirOrder" min="1" max="8" value="4"/><span id="iirOrderVal">4</span></label>
+      <label>Cutoff ω<sub>c</sub>/π<input type="range" id="iirCutoff" min="0.05" max="0.95" step="0.01" value="0.4"/><span id="iirCutoffVal">0.40</span></label>
+      <label>Ripple dB<input type="range" id="iirRipple" min="0.1" max="3" step="0.1" value="1"/><span id="iirRippleVal">1.0</span></label>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="sim2">
+  <h2>Simulation 6.2 — Bilinear Transform Visualizer</h2>
+  <p>Hover over the s-plane to see how points map to the z-plane via the bilinear transform. The jω axis maps to the unit circle; the left half-plane maps inside the unit circle (stable region).</p>
+  <div class="sim-container">
+    <canvas id="bilinCanvas"></canvas>
+    <div class="sim-controls">
+      <label>Sampling Rate F<sub>s</sub><input type="range" id="bilinFs" min="0.5" max="10" step="0.1" value="2"/><span id="bilinFsVal">2.0</span></label>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="sim3">
+  <h2>Simulation 6.3 — Stability Explorer</h2>
+  <p>Drag poles and zeros on the z-plane. When all poles are inside the unit circle the system is stable — watch the impulse response decay. Move poles outside and see it diverge.</p>
+  <div class="sim-container">
+    <canvas id="stabilityCanvas"></canvas>
+    <div class="sim-controls">
+      <label>Preset
+        <select id="stabPreset">
+          <option value="stable-complex" selected>Stable (complex)</option>
+          <option value="stable-real">Stable (real)</option>
+          <option value="marginal">Marginal</option>
+          <option value="unstable">Unstable</option>
+        </select>
+      </label>
+      <button id="stabAddPole" class="sim-btn">+ Pole pair</button>
+      <button id="stabAddZero" class="sim-btn">+ Zero</button>
+      <button id="stabReset" class="sim-btn">Reset</button>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ EQUATIONS ═══════════ -->
+
+<section class="section" id="equations">
+  <h2>Key Equations</h2>
+  <div class="equation-grid">
+    <div class="equation-card"><div class="equation-card-inner"><div class="equation-card-front"><h4>Bilinear Transform</h4><p>$$s=\frac{2}{T}\,\frac{1-z^{-1}}{1+z^{-1}}$$</p></div><div class="equation-card-back"><p>Maps the entire s-plane to the z-plane. Preserves stability: LHP → inside UC, jω axis → UC.</p></div></div></div>
+    <div class="equation-card"><div class="equation-card-inner"><div class="equation-card-front"><h4>Frequency Pre-Warping</h4><p>$$\Omega_c=\frac{2}{T}\tan\!\left(\frac{\omega_c}{2}\right)$$</p></div><div class="equation-card-back"><p>Corrects for the nonlinear frequency compression of the bilinear transform. Critical for matching specs.</p></div></div></div>
+    <div class="equation-card"><div class="equation-card-inner"><div class="equation-card-front"><h4>Butterworth Magnitude</h4><p>$$|H(j\Omega)|^2=\frac{1}{1+(\Omega/\Omega_c)^{2N}}$$</p></div><div class="equation-card-back"><p>Maximally flat magnitude response. No ripple in passband or stopband. Roll-off is 20N dB/decade.</p></div></div></div>
+    <div class="equation-card"><div class="equation-card-inner"><div class="equation-card-front"><h4>BIBO Stability</h4><p>$$|p_k| < 1 \;\;\forall\, k$$</p></div><div class="equation-card-back"><p>All poles of H(z) must be strictly inside the unit circle for a causal system to be BIBO stable.</p></div></div></div>
+  </div>
+</section>
+
+<!-- ═══════════ QUIZ ═══════════ -->
+
+<section class="section" id="quiz">
+  <h2>Check Your Understanding</h2>
+  <div class="quiz-card" data-correct="c">
+    <p class="quiz-q"><strong>Q1.</strong> The bilinear transform maps the jΩ axis in the s-plane to:</p>
+    <div class="quiz-options">
+      <button class="quiz-option" data-value="a">The real axis</button>
+      <button class="quiz-option" data-value="b">The imaginary axis</button>
+      <button class="quiz-option" data-value="c">The unit circle</button>
+      <button class="quiz-option" data-value="d">The origin</button>
+    </div>
+  </div>
+  <div class="quiz-card" data-correct="b">
+    <p class="quiz-q"><strong>Q2.</strong> A 4th-order Butterworth filter rolls off at:</p>
+    <div class="quiz-options">
+      <button class="quiz-option" data-value="a">20 dB/decade</button>
+      <button class="quiz-option" data-value="b">80 dB/decade</button>
+      <button class="quiz-option" data-value="c">40 dB/decade</button>
+      <button class="quiz-option" data-value="d">160 dB/decade</button>
+    </div>
+  </div>
+  <div class="quiz-card" data-correct="a">
+    <p class="quiz-q"><strong>Q3.</strong> A causal IIR system is BIBO stable if:</p>
+    <div class="quiz-options">
+      <button class="quiz-option" data-value="a">All poles are inside the unit circle</button>
+      <button class="quiz-option" data-value="b">All zeros are inside the unit circle</button>
+      <button class="quiz-option" data-value="c">All poles are on the unit circle</button>
+      <button class="quiz-option" data-value="d">The filter has more zeros than poles</button>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="next">
+  <a href="../07-filter-design/index.html" class="chapter-next-card">
+    <span class="next-label">Next Chapter →</span>
+    <span class="next-title">Filter Design Capstone</span>
+  </a>
+</section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script src="../../assets/js/theme.js"></script>
+<script src="../../assets/js/plot-utils.js"></script>
+<script src="../../assets/js/dsp-core.js"></script>
+<script src="../../assets/js/nav.js"></script>
+<script src="../../assets/js/katex-render.js"></script>
+<script src="sim/iir-designer.js"></script>
+<script src="sim/bilinear-transform.js"></script>
+<script src="sim/stability-explorer.js"></script>
+<script>
+(function(){
+  var hc=document.getElementById('heroCanvas');if(!hc)return;
+  var hctx=hc.getContext('2d');
+  function rz(){hc.width=hc.parentElement.clientWidth;hc.height=hc.parentElement.clientHeight;}
+  rz();window.addEventListener('resize',rz);
+  var t=0;
+  function anim(){
+    t+=0.015;var W=hc.width,H=hc.height;hctx.clearRect(0,0,W,H);
+    hctx.globalAlpha=0.25;
+    // Rotating poles on unit circle
+    var cx=W*0.5,cy=H*0.55,r=Math.min(W,H)*0.3;
+    hctx.strokeStyle='#1e3055';hctx.lineWidth=1;
+    hctx.beginPath();hctx.arc(cx,cy,r,0,Math.PI*2);hctx.stroke();
+    // 4 poles rotating slowly
+    for(var k=0;k<4;k++){
+      var a=t*0.3+k*Math.PI*0.5+Math.PI*0.25;
+      var pr=r*0.75;
+      var px=cx+pr*Math.cos(a),py=cy-pr*Math.sin(a);
+      hctx.strokeStyle='#ffca28';hctx.lineWidth=2;
+      hctx.beginPath();hctx.moveTo(px-4,py-4);hctx.lineTo(px+4,py+4);hctx.stroke();
+      hctx.beginPath();hctx.moveTo(px+4,py-4);hctx.lineTo(px-4,py+4);hctx.stroke();
+    }
+    // Magnitude response wave across top
+    hctx.strokeStyle='#00e5ff';hctx.lineWidth=1.5;
+    hctx.beginPath();
+    for(var i=0;i<W;i+=2){
+      var omega=i/W*Math.PI;
+      var mag=1/Math.sqrt(1+Math.pow(Math.tan(omega*0.5)/Math.tan(0.4*Math.PI*0.5),8));
+      var y=H*0.15-mag*H*0.1;
+      if(i===0)hctx.moveTo(i,y);else hctx.lineTo(i,y);
+    }
+    hctx.stroke();
+    hctx.globalAlpha=1;
+    requestAnimationFrame(anim);
+  }
+  anim();
+})();
+</script>
+</body>
+</html>

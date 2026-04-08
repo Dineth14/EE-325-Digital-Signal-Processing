@@ -1,279 +1,302 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Ch 7 — Filter Design Capstone</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css"/>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
   <link rel="stylesheet" href="../../assets/css/main.css"/>
   <link rel="stylesheet" href="../../assets/css/math.css"/>
   <link rel="stylesheet" href="../../assets/css/animations.css"/>
+  <link rel="stylesheet" href="../../assets/css/components.css"/>
 </head>
 <body>
-<nav class="sidebar" id="sidebar">
-  <div class="sidebar-header"><a href="../../index.html" class="sidebar-logo">DSP<span class="accent">book</span></a></div>
-  <ul class="sidebar-tree" id="sidebarTree"></ul>
-</nav>
-<main class="content" id="mainContent">
+  <button class="sidebar-toggle" aria-label="Toggle sidebar">☰</button>
+  <div class="app-layout">
+    <nav class="sidebar" aria-label="Chapter navigation">
+      <div class="sidebar-header">
+        <h2>Filter Design Capstone</h2>
+        <p class="subtitle">Chapter 7</p>
+      </div>
+      <div class="sidebar-nav"></div>
+    </nav>
 
-<section class="chapter-hero">
-  <canvas id="heroCanvas"></canvas>
-  <div class="hero-overlay">
-    <span class="hero-chip">Chapter 7</span>
-    <h1>Filter Design Capstone</h1>
-    <p class="hero-sub">Compare analog prototypes, explore multirate processing, and apply filters in a real-time playground.</p>
+    <main class="main-content">
+      <div class="content-wrapper">
+
+        <div class="chapter-hero">
+          <canvas id="heroCanvas"></canvas>
+          <div class="scanline-overlay"></div>
+          <div class="hero-content">
+            <span class="pill chapter-pill">Chapter 7</span>
+            <h1>Filter Design Capstone</h1>
+            <p class="hero-sub">Compare analog prototypes, explore multirate processing, and apply filters in a real-time playground.</p>
+          </div>
+        </div>
+
+        <div class="glass-card fade-in-up">
+          <h2>Learning Objectives</h2>
+          <ul class="objectives-list">
+            <li><span class="checkbox"></span>Compare Butterworth, Chebyshev, and Elliptic filter responses and tradeoffs.</li>
+            <li><span class="checkbox"></span>Understand multirate DSP: decimation, interpolation, and the Noble identities.</li>
+            <li><span class="checkbox"></span>Apply FIR and IIR filters to real-time streaming signals and interpret spectral changes.</li>
+            <li><span class="checkbox"></span>Select the right filter topology for a given design specification.</li>
+          </ul>
+        </div>
+
+        <div class="section-header"><h2>Theory</h2></div>
+
+        <div class="accordion" data-objective="1">
+          <div class="accordion-header">
+            <span class="accordion-arrow">▶</span>
+            <h3>§7.1 Comparing Analog Prototypes</h3>
+            <span class="accordion-summary">Butterworth, Chebyshev, Elliptic tradeoffs</span>
+          </div>
+          <div class="accordion-body"><div class="accordion-content">
+            <p>All classical IIR design methods start from an analog prototype and convert to digital via the bilinear transform. The main prototypes differ in how they distribute approximation error:</p>
+            <table class="math-table">
+              <thead><tr><th>Prototype</th><th>Passband</th><th>Stopband</th><th>Transition</th><th>Order for spec</th></tr></thead>
+              <tbody>
+                <tr><td>Butterworth</td><td>Max. flat</td><td>Monotonic</td><td>Widest</td><td>Highest</td></tr>
+                <tr><td>Chebyshev I</td><td>Equiripple</td><td>Monotonic</td><td>Medium</td><td>Medium</td></tr>
+                <tr><td>Chebyshev II</td><td>Flat</td><td>Equiripple</td><td>Medium</td><td>Medium</td></tr>
+                <tr><td>Elliptic</td><td>Equiripple</td><td>Equiripple</td><td>Narrowest</td><td>Lowest</td></tr>
+              </tbody>
+            </table>
+            <p>The <strong>Butterworth</strong> prototype is the simplest and has maximally flat magnitude:</p>
+            <div class="equation-box">$$|H_a(j\Omega)|^2=\frac{1}{1+(\Omega/\Omega_c)^{2N}}$$</div>
+            <p>The <strong>Chebyshev Type I</strong> trades passband flatness for a sharper transition:</p>
+            <div class="equation-box">$$|H_a(j\Omega)|^2=\frac{1}{1+\epsilon^2 T_N^2(\Omega/\Omega_c)}$$</div>
+            <p>where $T_N$ is the Chebyshev polynomial of degree $N$.</p>
+            <p>The <strong>Elliptic (Cauer)</strong> filter achieves the absolute minimum order for given passband ripple $R_p$, stopband attenuation $A_s$, and transition ratio &mdash; at the cost of ripple in both bands.</p>
+          </div></div>
+        </div>
+
+        <div class="accordion" data-objective="1">
+          <div class="accordion-header">
+            <span class="accordion-arrow">▶</span>
+            <h3>§7.2 Filter Design Procedure Summary</h3>
+            <span class="accordion-summary">End-to-end design flow for IIR and FIR</span>
+          </div>
+          <div class="accordion-body"><div class="accordion-content">
+            <p>A complete filter design flow involves these steps:</p>
+            <ol>
+              <li><strong>Specification:</strong> Define passband edge $\omega_p$, stopband edge $\omega_s$, passband ripple $R_p$ dB, and stopband attenuation $A_s$ dB.</li>
+              <li><strong>Choose topology:</strong> FIR (if linear phase required) or IIR (if efficiency is priority).</li>
+              <li><strong>For IIR:</strong>
+                <ol>
+                  <li>Pre-warp: $\Omega_p = \frac{2}{T}\tan(\omega_p/2)$, $\Omega_s = \frac{2}{T}\tan(\omega_s/2)$.</li>
+                  <li>Choose prototype (Butterworth/Chebyshev/Elliptic).</li>
+                  <li>Determine minimum order from selectivity ratio and attenuation spec.</li>
+                  <li>Design analog prototype $H_a(s)$.</li>
+                  <li>Apply bilinear transform to get $H(z)$.</li>
+                </ol>
+              </li>
+              <li><strong>For FIR:</strong>
+                <ol>
+                  <li>Estimate order from Kaiser formula: $N\approx\frac{A_s-7.95}{2.285\,\Delta\omega}+1$.</li>
+                  <li>Design windowed-sinc or use Parks-McClellan algorithm.</li>
+                </ol>
+              </li>
+              <li><strong>Verify:</strong> Check magnitude response, phase/group delay, and stability.</li>
+              <li><strong>Implement:</strong> Realize as cascade biquad sections (IIR) or direct convolution (FIR).</li>
+            </ol>
+          </div></div>
+        </div>
+
+        <div class="accordion" data-objective="2">
+          <div class="accordion-header">
+            <span class="accordion-arrow">▶</span>
+            <h3>§7.3 Multirate Signal Processing</h3>
+            <span class="accordion-summary">Decimation, interpolation, Noble identities</span>
+          </div>
+          <div class="accordion-body"><div class="accordion-content">
+            <p><strong>Multirate DSP</strong> processes signals at different sampling rates within the same system.</p>
+
+            <h4>Decimation (Downsampling by M)</h4>
+            <p>Keep every $M$-th sample: $y[n]=x[nM]$. The spectrum of $y$ contains $M$ shifted, scaled copies of $X(e^{j\omega})$:</p>
+            <div class="equation-box">$$Y(e^{j\omega})=\frac{1}{M}\sum_{k=0}^{M-1}X\!\left(e^{j(\omega-2\pi k)/M}\right)$$</div>
+            <p>An <strong>anti-aliasing filter</strong> (lowpass with cutoff $\pi/M$) must precede the downsampler.</p>
+
+            <h4>Interpolation (Upsampling by L)</h4>
+            <p>Insert $L-1$ zeros between each sample, then apply an <strong>anti-imaging filter</strong> (lowpass with cutoff $\pi/L$, gain $L$):</p>
+            <div class="equation-box">$$x_u[n]=\begin{cases}x[n/L],&n=0,\pm L,\pm 2L,\dots\\0,&\text{otherwise}\end{cases}$$</div>
+
+            <h4>Noble Identities</h4>
+            <p>Filters can be interchanged with up/downsamplers under polyphase decomposition, enabling efficient implementations.</p>
+          </div></div>
+        </div>
+
+        <div class="accordion" data-objective="4">
+          <div class="accordion-header">
+            <span class="accordion-arrow">▶</span>
+            <h3>§7.4 Practical Considerations</h3>
+            <span class="accordion-summary">Quantization, overflow, round-off noise</span>
+          </div>
+          <div class="accordion-body"><div class="accordion-content">
+            <h4>Coefficient Quantization</h4>
+            <p>In fixed-point implementations, filter coefficients must be quantized. This shifts poles and zeros, potentially changing the response significantly. Cascade second-order sections minimize this sensitivity.</p>
+
+            <h4>Overflow and Scaling</h4>
+            <p>Fixed-point arithmetic can overflow. Proper scaling at each biquad stage ensures the signal stays within the representable range.</p>
+
+            <h4>Round-Off Noise</h4>
+            <p>Each multiply-accumulate introduces quantization noise. For an $N$-th order direct-form IIR, the output noise variance grows with $N$. Cascade and parallel forms reduce this.</p>
+
+            <h4>Computational Complexity</h4>
+            <table class="math-table">
+              <thead><tr><th>Structure</th><th>Multiplies/sample</th><th>Adds/sample</th></tr></thead>
+              <tbody>
+                <tr><td>FIR Direct Form (order $N$)</td><td>$N+1$</td><td>$N$</td></tr>
+                <tr><td>IIR Direct Form II (N<sub>b</sub>, N<sub>a</sub>)</td><td>$N_b+N_a+1$</td><td>$N_b+N_a$</td></tr>
+                <tr><td>Cascade Biquads (K sections)</td><td>$5K$</td><td>$4K$</td></tr>
+              </tbody>
+            </table>
+          </div></div>
+        </div>
+
+        <div class="accordion" data-objective="3">
+          <div class="accordion-header">
+            <span class="accordion-arrow">▶</span>
+            <h3>§7.5 Real-Time Filtering Architecture</h3>
+            <span class="accordion-summary">Block processing, overlap-save, sample-by-sample</span>
+          </div>
+          <div class="accordion-body"><div class="accordion-content">
+            <p>Real-time filtering processes data in <strong>blocks</strong> (frames) or <strong>sample-by-sample</strong>:</p>
+
+            <h4>Block Processing</h4>
+            <p>Collect $N$ input samples, apply the filter (possibly via FFT-based fast convolution for long FIR), output $N$ filtered samples. Introduces latency of $N$ samples.</p>
+
+            <h4>Overlap-Save / Overlap-Add</h4>
+            <p>For FIR filters of length $M$ and block size $N$:</p>
+            <ul>
+              <li><strong>Overlap-Save:</strong> Append new $N$ samples to previous $M-1$, FFT the block of $N+M-1$, multiply with $H[k]$, IFFT, keep last $N$ samples.</li>
+              <li><strong>Overlap-Add:</strong> Zero-pad each block to $N+M-1$, FFT-convolve, overlap-add adjacent results.</li>
+            </ul>
+            <p>Both achieve $O(N\log N)$ per block instead of $O(NM)$.</p>
+
+            <h4>Sample-by-Sample</h4>
+            <p>Use the difference equation directly with circular buffers for delay lines. Minimal latency (1 sample) but no FFT speedup.</p>
+          </div></div>
+        </div>
+
+        <!-- ═══ SIMULATIONS ═══ -->
+        <div class="section-header"><h2>Interactive Simulations</h2></div>
+
+        <div class="sim-container fade-in-up">
+          <div class="sim-header"><h3>SIM 7.1 — Analog Prototype Comparison</h3></div>
+          <div class="sim-body">
+            <div class="sim-controls">
+              <label>Order<input type="range" id="protoOrder" min="1" max="10" value="4"/><span id="protoOrderVal">4</span></label>
+              <label>Ripple (dB)<input type="range" id="protoRipple" min="0.1" max="3" step="0.1" value="1"/><span id="protoRippleVal">1.0</span></label>
+              <label><input type="checkbox" id="protoButter" checked/> Butterworth</label>
+              <label><input type="checkbox" id="protoCheby1" checked/> Chebyshev I</label>
+              <label><input type="checkbox" id="protoCheby2" checked/> Chebyshev II</label>
+              <label><input type="checkbox" id="protoEllip" checked/> Elliptic</label>
+            </div>
+            <div class="sim-canvas-wrap canvas-interactive"><canvas id="protoCanvas"></canvas><div class="scanline-overlay"></div></div>
+          </div>
+        </div>
+
+        <div class="sim-container fade-in-up">
+          <div class="sim-header"><h3>SIM 7.2 — Multirate Processing</h3></div>
+          <div class="sim-body">
+            <div class="sim-controls">
+              <label>Mode
+                <select id="mrMode"><option value="decimate" selected>Decimate (↓M)</option><option value="interpolate">Interpolate (↑L)</option></select>
+              </label>
+              <label>Factor<input type="range" id="mrFactor" min="2" max="8" value="3"/><span id="mrFactorVal">3</span></label>
+              <label>Signal Freq<input type="range" id="mrFreq" min="0.02" max="0.4" step="0.01" value="0.1"/><span id="mrFreqVal">0.10</span></label>
+            </div>
+            <div class="sim-canvas-wrap canvas-interactive"><canvas id="multirateCanvas"></canvas><div class="scanline-overlay"></div></div>
+          </div>
+        </div>
+
+        <div class="sim-container fade-in-up">
+          <div class="sim-header"><h3>SIM 7.3 — Real-Time Filter Playground</h3></div>
+          <div class="sim-body">
+            <div class="sim-controls">
+              <label>Signal
+                <select id="pgSig"><option value="chirp" selected>Chirp</option><option value="noise">White Noise</option><option value="multi-tone">Multi-Tone</option><option value="square">Square Wave</option></select>
+              </label>
+              <label>Filter
+                <select id="pgFilter"><option value="lowpass" selected>Lowpass</option><option value="highpass">Highpass</option><option value="bandpass">Bandpass</option><option value="notch">Notch</option></select>
+              </label>
+              <label>Method
+                <select id="pgMethod"><option value="fir" selected>FIR</option><option value="iir">IIR</option></select>
+              </label>
+              <label>Cutoff ω/π<input type="range" id="pgCutoff" min="0.05" max="0.9" step="0.01" value="0.3"/><span id="pgCutoffVal">0.30</span></label>
+              <label>Order<input type="range" id="pgOrder" min="3" max="31" value="15"/><span id="pgOrderVal">15</span></label>
+            </div>
+            <div class="sim-canvas-wrap canvas-interactive"><canvas id="playgroundCanvas"></canvas><div class="scanline-overlay"></div></div>
+          </div>
+        </div>
+
+        <!-- ═══ KEY EQUATIONS ═══ -->
+        <div class="section-header"><h2>Key Equations</h2></div>
+        <div class="equation-grid">
+          <div class="equation-card"><div class="equation-card-inner"><div class="equation-card-front"><h4>Butterworth Order</h4><p>$$N\ge\frac{\log\!\left[\frac{10^{A_s/10}-1}{10^{R_p/10}-1}\right]}{2\log(\Omega_s/\Omega_p)}$$</p></div><div class="equation-card-back"><p>Minimum order for Butterworth filter given passband ripple $R_p$ and stopband attenuation $A_s$.</p></div></div></div>
+          <div class="equation-card"><div class="equation-card-inner"><div class="equation-card-front"><h4>Decimation Spectrum</h4><p>$$Y(e^{j\omega})=\frac{1}{M}\sum_{k=0}^{M-1}X(e^{j(\omega-2\pi k)/M})$$</p></div><div class="equation-card-back"><p>Downsampling creates $M$ spectral copies. Without anti-aliasing, these overlap causing aliasing distortion.</p></div></div></div>
+          <div class="equation-card"><div class="equation-card-inner"><div class="equation-card-front"><h4>Overlap-Save</h4><p>$$y[n]=\text{IFFT}\{X[k]\cdot H[k]\}$$</p></div><div class="equation-card-back"><p>Fast convolution via FFT: compute circular convolution, discard first $M-1$ samples per block.</p></div></div></div>
+          <div class="equation-card"><div class="equation-card-inner"><div class="equation-card-front"><h4>Cascade Biquad</h4><p>$$H(z)=\prod_k\frac{b_{0k}+b_{1k}z^{-1}+b_{2k}z^{-2}}{1+a_{1k}z^{-1}+a_{2k}z^{-2}}$$</p></div><div class="equation-card-back"><p>Preferred IIR implementation. Minimizes coefficient sensitivity and finite-precision effects.</p></div></div></div>
+        </div>
+
+        <!-- ═══ QUIZ ═══ -->
+        <div class="section-header"><h2>Chapter Quiz</h2></div>
+        <div class="quiz-card" data-correct="3">
+          <p class="quiz-question">1. Which filter prototype achieves the minimum order for a given set of magnitude specifications?</p>
+          <div class="quiz-options">
+            <div class="quiz-option">Butterworth</div>
+            <div class="quiz-option">Chebyshev Type I</div>
+            <div class="quiz-option">Chebyshev Type II</div>
+            <div class="quiz-option">Elliptic (Cauer)</div>
+          </div>
+          <div class="quiz-explanation">The Elliptic (Cauer) filter has equiripple in both passband and stopband, which allows it to achieve the absolute minimum order for any given set of passband ripple and stopband attenuation specifications.</div>
+        </div>
+        <div class="quiz-card" data-correct="1">
+          <p class="quiz-question">2. Before downsampling by M, an anti-aliasing filter cutoff should be:</p>
+          <div class="quiz-options">
+            <div class="quiz-option">π</div>
+            <div class="quiz-option">π/M</div>
+            <div class="quiz-option">Mπ</div>
+            <div class="quiz-option">2π/M</div>
+          </div>
+          <div class="quiz-explanation">Downsampling by $M$ compresses the spectrum by a factor of $M$. To prevent aliasing, a lowpass filter with cutoff $\pi/M$ must be applied before the downsampler.</div>
+        </div>
+        <div class="quiz-card" data-correct="0">
+          <p class="quiz-question">3. The main advantage of cascade biquad realization over direct form is:</p>
+          <div class="quiz-options">
+            <div class="quiz-option">Lower coefficient sensitivity</div>
+            <div class="quiz-option">Fewer multiplications</div>
+            <div class="quiz-option">Linear phase</div>
+            <div class="quiz-option">No delay elements needed</div>
+          </div>
+          <div class="quiz-explanation">Cascade biquad (second-order sections) realization minimizes coefficient sensitivity to quantization effects, making it much more robust in fixed-point implementations compared to high-order direct forms.</div>
+        </div>
+
+        <div class="glass-card fade-in-up" style="text-align:center;margin-top:3rem;">
+          <h2>🎉 Congratulations!</h2>
+          <p>You've completed the DSP Textbook.</p>
+          <p style="margin-top:0.5rem;">Return to the <a href="../../index.html" style="color:var(--accent-cyan);">home page</a> to review your progress.</p>
+        </div>
+
+      </div>
+    </main>
   </div>
-</section>
 
-<section class="section" id="objectives">
-  <h2>Learning Objectives</h2>
-  <ul class="objectives-list">
-    <li class="objective-item"><input type="checkbox" id="obj1"/><label for="obj1">Compare Butterworth, Chebyshev, and Elliptic filter responses and tradeoffs.</label></li>
-    <li class="objective-item"><input type="checkbox" id="obj2"/><label for="obj2">Understand multirate DSP: decimation, interpolation, and the Noble identities.</label></li>
-    <li class="objective-item"><input type="checkbox" id="obj3"/><label for="obj3">Apply FIR and IIR filters to real-time streaming signals and interpret spectral changes.</label></li>
-    <li class="objective-item"><input type="checkbox" id="obj4"/><label for="obj4">Select the right filter topology for a given design specification.</label></li>
-  </ul>
-</section>
-
-<section class="section" id="theory">
-  <h2>Theory</h2>
-
-  <div class="accordion">
-    <button class="accordion-btn" aria-expanded="false">§7.1 Comparing Analog Prototypes</button>
-    <div class="accordion-body">
-      <p>All classical IIR design methods start from an analog prototype and convert to digital via the bilinear transform. The main prototypes differ in how they distribute approximation error:</p>
-      <table class="math-table">
-        <thead><tr><th>Prototype</th><th>Passband</th><th>Stopband</th><th>Transition</th><th>Order for spec</th></tr></thead>
-        <tbody>
-          <tr><td>Butterworth</td><td>Max. flat</td><td>Monotonic</td><td>Widest</td><td>Highest</td></tr>
-          <tr><td>Chebyshev I</td><td>Equiripple</td><td>Monotonic</td><td>Medium</td><td>Medium</td></tr>
-          <tr><td>Chebyshev II</td><td>Flat</td><td>Equiripple</td><td>Medium</td><td>Medium</td></tr>
-          <tr><td>Elliptic</td><td>Equiripple</td><td>Equiripple</td><td>Narrowest</td><td>Lowest</td></tr>
-        </tbody>
-      </table>
-      <p>The <strong>Butterworth</strong> prototype is the simplest and has maximally flat magnitude:</p>
-      <div class="equation-box">$$|H_a(j\Omega)|^2=\frac{1}{1+(\Omega/\Omega_c)^{2N}}$$</div>
-      <p>The <strong>Chebyshev Type I</strong> trades passband flatness for a sharper transition:</p>
-      <div class="equation-box">$$|H_a(j\Omega)|^2=\frac{1}{1+\epsilon^2 T_N^2(\Omega/\Omega_c)}$$</div>
-      <p>where $T_N$ is the Chebyshev polynomial of degree $N$.</p>
-      <p>The <strong>Elliptic (Cauer)</strong> filter achieves the absolute minimum order for given passband ripple $R_p$, stopband attenuation $A_s$, and transition ratio &mdash; at the cost of ripple in both bands.</p>
-    </div>
-  </div>
-
-  <div class="accordion">
-    <button class="accordion-btn" aria-expanded="false">§7.2 Filter Design Procedure Summary</button>
-    <div class="accordion-body">
-      <p>A complete filter design flow involves these steps:</p>
-      <ol>
-        <li><strong>Specification:</strong> Define passband edge $\omega_p$, stopband edge $\omega_s$, passband ripple $R_p$ dB, and stopband attenuation $A_s$ dB.</li>
-        <li><strong>Choose topology:</strong> FIR (if linear phase required) or IIR (if efficiency is priority).</li>
-        <li><strong>For IIR:</strong>
-          <ol>
-            <li>Pre-warp: $\Omega_p = \frac{2}{T}\tan(\omega_p/2)$, $\Omega_s = \frac{2}{T}\tan(\omega_s/2)$.</li>
-            <li>Choose prototype (Butterworth/Chebyshev/Elliptic).</li>
-            <li>Determine minimum order from selectivity ratio and attenuation spec.</li>
-            <li>Design analog prototype $H_a(s)$.</li>
-            <li>Apply bilinear transform to get $H(z)$.</li>
-          </ol>
-        </li>
-        <li><strong>For FIR:</strong>
-          <ol>
-            <li>Estimate order from Kaiser formula: $N\approx\frac{A_s-7.95}{2.285\,\Delta\omega}+1$.</li>
-            <li>Design windowed-sinc or use Parks-McClellan algorithm.</li>
-          </ol>
-        </li>
-        <li><strong>Verify:</strong> Check magnitude response, phase/group delay, and stability.</li>
-        <li><strong>Implement:</strong> Realize as cascade biquad sections (IIR) or direct convolution (FIR).</li>
-      </ol>
-    </div>
-  </div>
-
-  <div class="accordion">
-    <button class="accordion-btn" aria-expanded="false">§7.3 Multirate Signal Processing</button>
-    <div class="accordion-body">
-      <p><strong>Multirate DSP</strong> processes signals at different sampling rates within the same system.</p>
-
-      <h4>Decimation (Downsampling by M)</h4>
-      <p>Keep every $M$-th sample: $y[n]=x[nM]$. The spectrum of $y$ contains $M$ shifted, scaled copies of $X(e^{j\omega})$:</p>
-      <div class="equation-box">$$Y(e^{j\omega})=\frac{1}{M}\sum_{k=0}^{M-1}X\!\left(e^{j(\omega-2\pi k)/M}\right)$$</div>
-      <p>An <strong>anti-aliasing filter</strong> (lowpass with cutoff $\pi/M$) must precede the downsampler.</p>
-
-      <h4>Interpolation (Upsampling by L)</h4>
-      <p>Insert $L-1$ zeros between each sample, then apply an <strong>anti-imaging filter</strong> (lowpass with cutoff $\pi/L$, gain $L$):</p>
-      <div class="equation-box">$$x_u[n]=\begin{cases}x[n/L],&n=0,\pm L,\pm 2L,\dots\\0,&\text{otherwise}\end{cases}$$</div>
-
-      <h4>Noble Identities</h4>
-      <p>Filters can be interchanged with up/downsamplers under polyphase decomposition, enabling efficient implementations.</p>
-    </div>
-  </div>
-
-  <div class="accordion">
-    <button class="accordion-btn" aria-expanded="false">§7.4 Practical Considerations</button>
-    <div class="accordion-body">
-      <h4>Coefficient Quantization</h4>
-      <p>In fixed-point implementations, filter coefficients must be quantized. This shifts poles and zeros, potentially changing the response significantly. Cascade second-order sections minimize this sensitivity.</p>
-
-      <h4>Overflow and Scaling</h4>
-      <p>Fixed-point arithmetic can overflow. Proper scaling at each biquad stage ensures the signal stays within the representable range.</p>
-
-      <h4>Round-Off Noise</h4>
-      <p>Each multiply-accumulate introduces quantization noise. For an $N$-th order direct-form IIR, the output noise variance grows with $N$. Cascade and parallel forms reduce this.</p>
-
-      <h4>Computational Complexity</h4>
-      <table class="math-table">
-        <thead><tr><th>Structure</th><th>Multiplies/sample</th><th>Adds/sample</th></tr></thead>
-        <tbody>
-          <tr><td>FIR Direct Form (order $N$)</td><td>$N+1$</td><td>$N$</td></tr>
-          <tr><td>IIR Direct Form II (N<sub>b</sub>, N<sub>a</sub>)</td><td>$N_b+N_a+1$</td><td>$N_b+N_a$</td></tr>
-          <tr><td>Cascade Biquads (K sections)</td><td>$5K$</td><td>$4K$</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="accordion">
-    <button class="accordion-btn" aria-expanded="false">§7.5 Real-Time Filtering Architecture</button>
-    <div class="accordion-body">
-      <p>Real-time filtering processes data in <strong>blocks</strong> (frames) or <strong>sample-by-sample</strong>:</p>
-
-      <h4>Block Processing</h4>
-      <p>Collect $N$ input samples, apply the filter (possibly via FFT-based fast convolution for long FIR), output $N$ filtered samples. Introduces latency of $N$ samples.</p>
-
-      <h4>Overlap-Save / Overlap-Add</h4>
-      <p>For FIR filters of length $M$ and block size $N$:</p>
-      <ul>
-        <li><strong>Overlap-Save:</strong> Append new $N$ samples to previous $M-1$, FFT the block of $N+M-1$, multiply with $H[k]$, IFFT, keep last $N$ samples.</li>
-        <li><strong>Overlap-Add:</strong> Zero-pad each block to $N+M-1$, FFT-convolve, overlap-add adjacent results.</li>
-      </ul>
-      <p>Both achieve $O(N\log N)$ per block instead of $O(NM)$.</p>
-
-      <h4>Sample-by-Sample</h4>
-      <p>Use the difference equation directly with circular buffers for delay lines. Minimal latency (1 sample) but no FFT speedup.</p>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════ SIMULATIONS ═══════════ -->
-
-<section class="section" id="sim1">
-  <h2>Simulation 7.1 — Analog Prototype Comparison</h2>
-  <p>Compare Butterworth, Chebyshev I, Chebyshev II, and Elliptic magnitude responses on a log-frequency scale. Observe how each distributes approximation error differently.</p>
-  <div class="sim-container">
-    <canvas id="protoCanvas"></canvas>
-    <div class="sim-controls">
-      <label>Order<input type="range" id="protoOrder" min="1" max="10" value="4"/><span id="protoOrderVal">4</span></label>
-      <label>Ripple (dB)<input type="range" id="protoRipple" min="0.1" max="3" step="0.1" value="1"/><span id="protoRippleVal">1.0</span></label>
-      <label><input type="checkbox" id="protoButter" checked/> Butterworth</label>
-      <label><input type="checkbox" id="protoCheby1" checked/> Chebyshev I</label>
-      <label><input type="checkbox" id="protoCheby2" checked/> Chebyshev II</label>
-      <label><input type="checkbox" id="protoEllip" checked/> Elliptic</label>
-    </div>
-  </div>
-</section>
-
-<section class="section" id="sim2">
-  <h2>Simulation 7.2 — Multirate Processing</h2>
-  <p>Visualize decimation (downsampling) and interpolation (upsampling). Watch how the spectrum changes and observe aliasing when no anti-aliasing filter is used.</p>
-  <div class="sim-container">
-    <canvas id="multirateCanvas"></canvas>
-    <div class="sim-controls">
-      <label>Mode
-        <select id="mrMode"><option value="decimate" selected>Decimate (↓M)</option><option value="interpolate">Interpolate (↑L)</option></select>
-      </label>
-      <label>Factor<input type="range" id="mrFactor" min="2" max="8" value="3"/><span id="mrFactorVal">3</span></label>
-      <label>Signal Freq<input type="range" id="mrFreq" min="0.02" max="0.4" step="0.01" value="0.1"/><span id="mrFreqVal">0.10</span></label>
-    </div>
-  </div>
-</section>
-
-<section class="section" id="sim3">
-  <h2>Simulation 7.3 — Real-Time Filter Playground</h2>
-  <p>Stream a live signal through an FIR or IIR filter. See the time-domain waveform and frequency spectrum update in real time. Experiment with different signal types, filter types, and parameters.</p>
-  <div class="sim-container">
-    <canvas id="playgroundCanvas"></canvas>
-    <div class="sim-controls">
-      <label>Signal
-        <select id="pgSig"><option value="chirp" selected>Chirp</option><option value="noise">White Noise</option><option value="multi-tone">Multi-Tone</option><option value="square">Square Wave</option></select>
-      </label>
-      <label>Filter
-        <select id="pgFilter"><option value="lowpass" selected>Lowpass</option><option value="highpass">Highpass</option><option value="bandpass">Bandpass</option><option value="notch">Notch</option></select>
-      </label>
-      <label>Method
-        <select id="pgMethod"><option value="fir" selected>FIR</option><option value="iir">IIR</option></select>
-      </label>
-      <label>Cutoff ω/π<input type="range" id="pgCutoff" min="0.05" max="0.9" step="0.01" value="0.3"/><span id="pgCutoffVal">0.30</span></label>
-      <label>Order<input type="range" id="pgOrder" min="3" max="31" value="15"/><span id="pgOrderVal">15</span></label>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════ EQUATIONS ═══════════ -->
-
-<section class="section" id="equations">
-  <h2>Key Equations</h2>
-  <div class="equation-grid">
-    <div class="equation-card"><div class="equation-card-inner"><div class="equation-card-front"><h4>Butterworth Order</h4><p>$$N\ge\frac{\log\!\left[\frac{10^{A_s/10}-1}{10^{R_p/10}-1}\right]}{2\log(\Omega_s/\Omega_p)}$$</p></div><div class="equation-card-back"><p>Minimum order for Butterworth filter given passband ripple $R_p$ and stopband attenuation $A_s$.</p></div></div></div>
-    <div class="equation-card"><div class="equation-card-inner"><div class="equation-card-front"><h4>Decimation Spectrum</h4><p>$$Y(e^{j\omega})=\frac{1}{M}\sum_{k=0}^{M-1}X(e^{j(\omega-2\pi k)/M})$$</p></div><div class="equation-card-back"><p>Downsampling creates $M$ spectral copies. Without anti-aliasing, these overlap causing aliasing distortion.</p></div></div></div>
-    <div class="equation-card"><div class="equation-card-inner"><div class="equation-card-front"><h4>Overlap-Save</h4><p>$$y[n]=\text{IFFT}\{X[k]\cdot H[k]\}$$</p></div><div class="equation-card-back"><p>Fast convolution via FFT: compute circular convolution, discard first $M-1$ samples per block.</p></div></div></div>
-    <div class="equation-card"><div class="equation-card-inner"><div class="equation-card-front"><h4>Cascade Biquad</h4><p>$$H(z)=\prod_k\frac{b_{0k}+b_{1k}z^{-1}+b_{2k}z^{-2}}{1+a_{1k}z^{-1}+a_{2k}z^{-2}}$$</p></div><div class="equation-card-back"><p>Preferred IIR implementation. Minimizes coefficient sensitivity and finite-precision effects.</p></div></div></div>
-  </div>
-</section>
-
-<!-- ═══════════ QUIZ ═══════════ -->
-
-<section class="section" id="quiz">
-  <h2>Check Your Understanding</h2>
-  <div class="quiz-card" data-correct="d">
-    <p class="quiz-q"><strong>Q1.</strong> Which filter prototype achieves the minimum order for a given set of magnitude specifications?</p>
-    <div class="quiz-options">
-      <button class="quiz-option" data-value="a">Butterworth</button>
-      <button class="quiz-option" data-value="b">Chebyshev Type I</button>
-      <button class="quiz-option" data-value="c">Chebyshev Type II</button>
-      <button class="quiz-option" data-value="d">Elliptic (Cauer)</button>
-    </div>
-  </div>
-  <div class="quiz-card" data-correct="b">
-    <p class="quiz-q"><strong>Q2.</strong> Before downsampling by M, an anti-aliasing filter cutoff should be:</p>
-    <div class="quiz-options">
-      <button class="quiz-option" data-value="a">π</button>
-      <button class="quiz-option" data-value="b">π/M</button>
-      <button class="quiz-option" data-value="c">Mπ</button>
-      <button class="quiz-option" data-value="d">2π/M</button>
-    </div>
-  </div>
-  <div class="quiz-card" data-correct="a">
-    <p class="quiz-q"><strong>Q3.</strong> The main advantage of cascade biquad realization over direct form is:</p>
-    <div class="quiz-options">
-      <button class="quiz-option" data-value="a">Lower coefficient sensitivity</button>
-      <button class="quiz-option" data-value="b">Fewer multiplications</button>
-      <button class="quiz-option" data-value="c">Linear phase</button>
-      <button class="quiz-option" data-value="d">No delay elements needed</button>
-    </div>
-  </div>
-</section>
-
-<section class="section" id="next">
-  <div class="chapter-next-card" style="text-align:center;">
-    <span class="next-label">🎉 Congratulations!</span>
-    <span class="next-title">You've completed the DSP Textbook</span>
-    <p style="color:var(--text-muted);margin-top:0.5rem;">Return to the <a href="../../index.html" style="color:var(--accent-cyan);">home page</a> to review your progress.</p>
-  </div>
-</section>
-</main>
-
-<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
-<script src="../../assets/js/theme.js"></script>
-<script src="../../assets/js/plot-utils.js"></script>
-<script src="../../assets/js/dsp-core.js"></script>
-<script src="../../assets/js/nav.js"></script>
-<script src="../../assets/js/katex-render.js"></script>
-<script src="sim/analog-prototype.js"></script>
-<script src="sim/multirate.js"></script>
-<script src="sim/adaptive-filter.js"></script>
-<script>
+  <script src="../../assets/js/dsp-core.js"></script>
+  <script src="../../assets/js/plot-utils.js"></script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/katex-render.js"></script>
+  <script src="sim/analog-prototype.js"></script>
+  <script src="sim/multirate.js"></script>
+  <script src="sim/adaptive-filter.js"></script>
+  <script>
 (function(){
   var hc=document.getElementById('heroCanvas');if(!hc)return;
   var hctx=hc.getContext('2d');
@@ -283,7 +306,6 @@
   function anim(){
     t+=0.02;var W=hc.width,H=hc.height;hctx.clearRect(0,0,W,H);
     hctx.globalAlpha=0.25;
-    // Animated multiple filter responses sweeping
     var colors=['#00e5ff','#b388ff','#69ff47','#ffca28'];
     for(var f=0;f<4;f++){
       hctx.strokeStyle=colors[f];hctx.lineWidth=1.2;
@@ -304,6 +326,6 @@
   }
   anim();
 })();
-</script>
+  </script>
 </body>
 </html>

@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Signal Processing — Interactive Visual Textbook</title>
+  <meta name="description" content="A complete, interactive web-based textbook covering Digital Signal Processing from sampling theory through advanced filter design.">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/math.css">
+  <link rel="stylesheet" href="assets/css/animations.css">
+  <link rel="stylesheet" href="assets/css/components.css">
+</head>
+<body>
+
+  <!-- ═══ HERO SECTION ═══ -->
+  <section class="landing-hero" id="hero">
+    <canvas id="heroCanvas" aria-label="Animated spectrum analyzer display showing DSP-themed frequency patterns"></canvas>
+    <div class="scanline-overlay"></div>
+    <div class="hero-text">
+      <div class="fft-loader" id="loader" style="margin-bottom:1.5rem">
+        <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+      </div>
+      <h1>Digital Signal Processing</h1>
+      <p class="tagline">An Interactive Visual Textbook</p>
+      <div class="cta-row">
+        <a href="chapters/01-sampling-reconstruction/index.html" class="btn btn-primary">Start with Chapter 1 →</a>
+        <a href="chapters/07-filter-design/index.html" class="btn btn-ghost">Jump to Filter Design →</a>
+      </div>
+    </div>
+    <div class="scroll-indicator" aria-hidden="true">▾</div>
+  </section>
+
+  <!-- ═══ CONCEPTS BELT ═══ -->
+  <section class="concepts-belt" id="concepts">
+    <div class="concept-pill"><canvas width="50" height="30" data-anim="sampling" aria-hidden="true"></canvas>Sampling</div>
+    <div class="concept-pill"><canvas width="50" height="30" data-anim="convolution" aria-hidden="true"></canvas>Convolution</div>
+    <div class="concept-pill"><canvas width="50" height="30" data-anim="ztransform" aria-hidden="true"></canvas>Z-Transform</div>
+    <div class="concept-pill"><canvas width="50" height="30" data-anim="dft" aria-hidden="true"></canvas>DFT</div>
+    <div class="concept-pill"><canvas width="50" height="30" data-anim="fft" aria-hidden="true"></canvas>FFT</div>
+    <div class="concept-pill"><canvas width="50" height="30" data-anim="fir" aria-hidden="true"></canvas>FIR</div>
+    <div class="concept-pill"><canvas width="50" height="30" data-anim="iir" aria-hidden="true"></canvas>IIR</div>
+  </section>
+
+  <!-- ═══ CHAPTER CARDS ═══ -->
+  <section class="chapter-grid" id="chapters">
+    <a href="chapters/01-sampling-reconstruction/index.html" class="chapter-card" aria-label="Chapter 1: Sampling and Reconstruction">
+      <div class="card-preview"><canvas aria-hidden="true"></canvas></div>
+      <div class="card-body">
+        <span class="card-chapter-num">Chapter 01</span>
+        <h3 class="card-title">Sampling & Reconstruction</h3>
+        <p class="card-desc">Nyquist theorem, aliasing, quantization, and perfect reconstruction from samples.</p>
+        <div class="card-tags">
+          <span class="tag tag-time">Nyquist</span>
+          <span class="tag tag-freq">Aliasing</span>
+          <span class="tag tag-design">Quantization</span>
+          <span class="tag tag-time">Sinc Interpolation</span>
+        </div>
+      </div>
+      <div class="card-progress"><div class="fill" style="width:0%" data-chapter="1"></div></div>
+    </a>
+
+    <a href="chapters/02-discrete-signals-lti/index.html" class="chapter-card" aria-label="Chapter 2: Discrete-Time Signals and LTI Systems">
+      <div class="card-preview"><canvas aria-hidden="true"></canvas></div>
+      <div class="card-body">
+        <span class="card-chapter-num">Chapter 02</span>
+        <h3 class="card-title">Discrete Signals & LTI Systems</h3>
+        <p class="card-desc">Elementary signals, system properties, convolution sum, and difference equations.</p>
+        <div class="card-tags">
+          <span class="tag tag-time">Impulse</span>
+          <span class="tag tag-design">LTI</span>
+          <span class="tag tag-time">Convolution</span>
+          <span class="tag tag-stability">BIBO</span>
+        </div>
+      </div>
+      <div class="card-progress"><div class="fill" style="width:0%" data-chapter="2"></div></div>
+    </a>
+
+    <a href="chapters/03-z-transform/index.html" class="chapter-card" aria-label="Chapter 3: The Z-Transform">
+      <div class="card-preview"><canvas aria-hidden="true"></canvas></div>
+      <div class="card-body">
+        <span class="card-chapter-num">Chapter 03</span>
+        <h3 class="card-title">The Z-Transform</h3>
+        <p class="card-desc">Z-transform pairs, ROC, poles & zeros, system function, and frequency response.</p>
+        <div class="card-tags">
+          <span class="tag tag-freq">Pole-Zero</span>
+          <span class="tag tag-stability">ROC</span>
+          <span class="tag tag-design">H(z)</span>
+          <span class="tag tag-freq">Unit Circle</span>
+        </div>
+      </div>
+      <div class="card-progress"><div class="fill" style="width:0%" data-chapter="3"></div></div>
+    </a>
+
+    <a href="chapters/04-dtft-dft-dfs/index.html" class="chapter-card" aria-label="Chapter 4: DTFT, DFT, DFS and FFT">
+      <div class="card-preview"><canvas aria-hidden="true"></canvas></div>
+      <div class="card-body">
+        <span class="card-chapter-num">Chapter 04</span>
+        <h3 class="card-title">DTFT, DFT, DFS & FFT</h3>
+        <p class="card-desc">Frequency analysis, spectral leakage, windowing, and the Fast Fourier Transform.</p>
+        <div class="card-tags">
+          <span class="tag tag-freq">DTFT</span>
+          <span class="tag tag-freq">DFT</span>
+          <span class="tag tag-design">FFT</span>
+          <span class="tag tag-time">Windowing</span>
+        </div>
+      </div>
+      <div class="card-progress"><div class="fill" style="width:0%" data-chapter="4"></div></div>
+    </a>
+
+    <a href="chapters/05-fir-filters/index.html" class="chapter-card" aria-label="Chapter 5: FIR Filters">
+      <div class="card-preview"><canvas aria-hidden="true"></canvas></div>
+      <div class="card-body">
+        <span class="card-chapter-num">Chapter 05</span>
+        <h3 class="card-title">FIR Filters</h3>
+        <p class="card-desc">Linear phase, window design, frequency sampling, and Parks-McClellan method.</p>
+        <div class="card-tags">
+          <span class="tag tag-design">Window Design</span>
+          <span class="tag tag-freq">Linear Phase</span>
+          <span class="tag tag-time">Equiripple</span>
+        </div>
+      </div>
+      <div class="card-progress"><div class="fill" style="width:0%" data-chapter="5"></div></div>
+    </a>
+
+    <a href="chapters/06-iir-filters/index.html" class="chapter-card" aria-label="Chapter 6: IIR Filters">
+      <div class="card-preview"><canvas aria-hidden="true"></canvas></div>
+      <div class="card-body">
+        <span class="card-chapter-num">Chapter 06</span>
+        <h3 class="card-title">IIR Filters</h3>
+        <p class="card-desc">Butterworth, Chebyshev, bilinear transform, and realization structures.</p>
+        <div class="card-tags">
+          <span class="tag tag-design">Butterworth</span>
+          <span class="tag tag-design">Bilinear</span>
+          <span class="tag tag-stability">Stability</span>
+        </div>
+      </div>
+      <div class="card-progress"><div class="fill" style="width:0%" data-chapter="6"></div></div>
+    </a>
+
+    <a href="chapters/07-filter-design/index.html" class="chapter-card" aria-label="Chapter 7: Filter Design Capstone">
+      <div class="card-preview"><canvas aria-hidden="true"></canvas></div>
+      <div class="card-body">
+        <span class="card-chapter-num">Chapter 07</span>
+        <h3 class="card-title">Filter Design Capstone</h3>
+        <p class="card-desc">Complete design workflow, frequency transformations, multirate DSP, and audio testing.</p>
+        <div class="card-tags">
+          <span class="tag tag-design">Design Wizard</span>
+          <span class="tag tag-freq">Multirate</span>
+          <span class="tag tag-time">Audio</span>
+        </div>
+      </div>
+      <div class="card-progress"><div class="fill" style="width:0%" data-chapter="7"></div></div>
+    </a>
+
+    <div class="chapter-card" style="opacity:0.4; pointer-events:none">
+      <div class="card-preview" style="display:flex;align-items:center;justify-content:center;color:var(--text-dim)">
+        Coming Soon
+      </div>
+      <div class="card-body">
+        <span class="card-chapter-num">Chapter 08</span>
+        <h3 class="card-title">Adaptive Filters</h3>
+        <p class="card-desc">LMS, RLS algorithms, echo cancellation, and adaptive noise removal.</p>
+        <div class="card-tags">
+          <span class="tag tag-design">LMS</span>
+          <span class="tag tag-design">RLS</span>
+        </div>
+      </div>
+      <div class="card-progress"><div class="fill" style="width:0%"></div></div>
+    </div>
+  </section>
+
+  <!-- ═══ FUNDAMENTAL TRANSFORMS ═══ -->
+  <section class="transforms-section" id="transforms">
+    <h2>The Fundamental Transforms</h2>
+    <p class="section-subtitle">The four equations that unify all of digital signal processing</p>
+    <div class="transforms-grid">
+      <div class="transform-card">
+        <div class="card-name">Nyquist–Shannon Sampling Theorem</div>
+        <div class="card-equation">$$x(t) \text{ is recoverable from samples iff } f_s > 2f_{\max}$$</div>
+        <p class="card-explain">A bandlimited signal can be perfectly reconstructed from its samples if the sampling rate exceeds twice the highest frequency component.</p>
+      </div>
+      <div class="transform-card">
+        <div class="card-name">Convolution Theorem</div>
+        <div class="card-equation">$$Y(e^{j\omega}) = X(e^{j\omega}) \cdot H(e^{j\omega})$$</div>
+        <p class="card-explain">Convolution in time domain equals multiplication in frequency domain — the key insight enabling efficient filter analysis.</p>
+      </div>
+      <div class="transform-card">
+        <div class="card-name">Discrete Fourier Transform</div>
+        <div class="card-equation">$$X[k] = \sum_{n=0}^{N-1} x[n]\, W_N^{kn}, \quad W_N = e^{-j2\pi/N}$$</div>
+        <p class="card-explain">Maps a finite sequence to its frequency-domain representation — the computationally realizable form of spectral analysis.</p>
+      </div>
+      <div class="transform-card">
+        <div class="card-name">Z-Transform</div>
+        <div class="card-equation">$$X(z) = \sum_{n=-\infty}^{\infty} x[n]\, z^{-n}$$</div>
+        <p class="card-explain">Generalizes the DTFT to the entire complex plane, enabling algebraic system analysis via poles and zeros.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ PROGRESS DASHBOARD ═══ -->
+  <section class="progress-dashboard" id="progress">
+    <h2>Your Progress</h2>
+    <div id="progressList"></div>
+    <div style="text-align:center; margin-top:1.5rem">
+      <button class="btn btn-ghost btn-sm" id="resetProgress" aria-label="Reset all progress">↺ Reset Progress</button>
+    </div>
+  </section>
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div>
+        <h4>References</h4>
+        <ul>
+          <li>Oppenheim & Schafer — Discrete-Time Signal Processing</li>
+          <li>Proakis & Manolakis — Digital Signal Processing</li>
+          <li>Lyons — Understanding DSP</li>
+          <li>McClellan, Schafer & Yoder — DSP First</li>
+          <li>Mitra — Digital Signal Processing</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Links</h4>
+        <ul>
+          <li><a href="https://github.com">GitHub Repository</a></li>
+          <li>MIT License</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Built With</h4>
+        <ul>
+          <li>KaTeX — Math rendering</li>
+          <li>Canvas API — Visualizations</li>
+          <li>Pure HTML / CSS / JS</li>
+          <li>Zero build tools</li>
+        </ul>
+      </div>
+    </div>
+    <p class="copyright">© 2024 Digital Signal Processing Interactive Textbook. Released under the MIT License.</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="assets/js/dsp-core.js"></script>
+  <script src="assets/js/plot-utils.js"></script>
+  <script src="assets/js/theme.js"></script>
+  <script src="assets/js/katex-render.js"></script>
+
+  <script>
+  (function() {
+    'use strict';
+
+    /* ── Hero spectrum analyzer canvas ── */
+    var heroCanvas = document.getElementById('heroCanvas');
+    if (heroCanvas) {
+      var ctx = heroCanvas.getContext('2d');
+      var bins = 60;
+      var heights = new Array(bins).fill(0);
+      var targets = new Array(bins).fill(0);
+      var time = 0;
+
+      function resizeHero() {
+        heroCanvas.width = heroCanvas.parentElement.offsetWidth;
+        heroCanvas.height = heroCanvas.parentElement.offsetHeight;
+      }
+      resizeHero();
+      window.addEventListener('resize', resizeHero);
+
+      function updateTargets() {
+        var pattern = Math.floor(time / 4) % 3;
+        for (var i = 0; i < bins; i++) {
+          var f = i / bins;
+          if (pattern === 0) {
+            // Sinc pattern
+            var x = (f - 0.5) * 12;
+            targets[i] = x === 0 ? 1 : Math.abs(Math.sin(Math.PI * x) / (Math.PI * x));
+          } else if (pattern === 1) {
+            // Impulse train
+            targets[i] = (i % 8 === 0) ? 0.9 : 0.1 + Math.random() * 0.05;
+          } else {
+            // Windowed spectrum
+            targets[i] = Math.exp(-((f - 0.3) * (f - 0.3)) / 0.01) * 0.9 +
+                         Math.exp(-((f - 0.7) * (f - 0.7)) / 0.005) * 0.6 +
+                         Math.random() * 0.08;
+          }
+        }
+      }
+      updateTargets();
+
+      function drawHero() {
+        var w = heroCanvas.width, h = heroCanvas.height;
+        ctx.fillStyle = '#060b18';
+        ctx.fillRect(0, 0, w, h);
+
+        time += 1 / 60;
+        if (time % 4 < 0.02) updateTargets();
+
+        var barW = w / bins;
+        for (var i = 0; i < bins; i++) {
+          heights[i] += (targets[i] - heights[i]) * 0.05;
+          heights[i] += (Math.random() - 0.5) * 0.01;
+          heights[i] = Math.max(0.02, Math.min(1, heights[i]));
+
+          var barH = heights[i] * h * 0.7;
+          var x = i * barW;
+          var y = h - barH;
+
+          var grad = ctx.createLinearGradient(0, y, 0, h);
+          var t = i / bins;
+          var r = Math.round(0 + t * 179);
+          var g = Math.round(229 - t * 93);
+          var b = Math.round(255);
+          grad.addColorStop(0, 'rgba(' + r + ',' + g + ',' + b + ',0.8)');
+          grad.addColorStop(1, 'rgba(' + r + ',' + g + ',' + b + ',0.2)');
+
+          ctx.fillStyle = grad;
+          ctx.fillRect(x + 1, y, barW - 2, barH);
+        }
+
+        // CRT scanlines
+        ctx.fillStyle = 'rgba(0,0,0,0.03)';
+        for (var sy = 0; sy < h; sy += 4) {
+          ctx.fillRect(0, sy + 2, w, 2);
+        }
+
+        requestAnimationFrame(drawHero);
+      }
+      drawHero();
+    }
+
+    /* ── Concept pill mini-animations ── */
+    document.querySelectorAll('.concept-pill canvas').forEach(function(c) {
+      var cx = c.getContext('2d');
+      var anim = c.getAttribute('data-anim');
+      var t = 0;
+      function drawPill() {
+        var w = 50, h = 30;
+        cx.clearRect(0, 0, w, h);
+        t += 0.03;
+        cx.strokeStyle = '#00e5ff';
+        cx.lineWidth = 1.5;
+        cx.beginPath();
+
+        if (anim === 'sampling') {
+          for (var i = 0; i < w; i++) {
+            var y = h/2 + Math.sin(i * 0.3 + t) * 8;
+            if (i === 0) cx.moveTo(i, y); else cx.lineTo(i, y);
+          }
+          cx.stroke();
+          cx.fillStyle = '#00e5ff';
+          for (var j = 5; j < w; j += 10) {
+            var sy = h/2 + Math.sin(j * 0.3 + t) * 8;
+            cx.fillRect(j-1, sy-1, 3, 3);
+          }
+        } else if (anim === 'convolution') {
+          cx.fillStyle = 'rgba(0,229,255,0.3)';
+          var shift = (Math.sin(t) * 0.5 + 0.5) * 20;
+          cx.fillRect(5, 8, 15, 14);
+          cx.fillStyle = 'rgba(179,136,255,0.3)';
+          cx.fillRect(10 + shift, 8, 15, 14);
+          cx.strokeRect(5, 8, 15, 14);
+          cx.strokeRect(10 + shift, 8, 15, 14);
+        } else if (anim === 'ztransform') {
+          cx.arc(25, 15, 10, 0, 2 * Math.PI);
+          cx.stroke();
+          var px = 25 + 10 * Math.cos(t);
+          var py = 15 + 10 * Math.sin(t);
+          cx.fillStyle = '#00e5ff';
+          cx.beginPath();
+          cx.arc(px, py, 2, 0, 2 * Math.PI);
+          cx.fill();
+        } else if (anim === 'dft') {
+          for (var k = 0; k < 5; k++) {
+            var bh = (Math.sin(t + k * 1.2) * 0.5 + 0.5) * 18;
+            cx.fillStyle = '#00e5ff';
+            cx.fillRect(5 + k * 9, h - bh - 3, 6, bh);
+          }
+        } else if (anim === 'fft') {
+          cx.fillStyle = '#00e5ff';
+          cx.beginPath();
+          cx.arc(15, 10, 3, 0, 2*Math.PI); cx.fill();
+          cx.beginPath();
+          cx.arc(35, 10, 3, 0, 2*Math.PI); cx.fill();
+          cx.beginPath();
+          cx.arc(15, 22, 3, 0, 2*Math.PI); cx.fill();
+          cx.beginPath();
+          cx.arc(35, 22, 3, 0, 2*Math.PI); cx.fill();
+          var alpha = (Math.sin(t * 2) * 0.5 + 0.5);
+          cx.strokeStyle = 'rgba(0,229,255,' + alpha + ')';
+          cx.beginPath(); cx.moveTo(18, 10); cx.lineTo(32, 22); cx.stroke();
+          cx.beginPath(); cx.moveTo(18, 22); cx.lineTo(32, 10); cx.stroke();
+        } else if (anim === 'fir') {
+          cx.fillStyle = '#00e5ff';
+          var coefs = [0.3, 0.6, 1, 0.6, 0.3];
+          for (var fi = 0; fi < coefs.length; fi++) {
+            var fy = h - coefs[fi] * 20 - 3;
+            cx.fillRect(4 + fi * 9, fy, 3, h - fy - 3);
+            cx.beginPath(); cx.arc(5.5 + fi * 9, fy, 2, 0, 2*Math.PI); cx.fill();
+          }
+        } else if (anim === 'iir') {
+          cx.beginPath();
+          for (var ii = 0; ii < w; ii++) {
+            var iy = h/2 + Math.exp(-ii * 0.08) * Math.cos(ii * 0.5 + t) * 10;
+            if (ii === 0) cx.moveTo(ii, iy); else cx.lineTo(ii, iy);
+          }
+          cx.stroke();
+        }
+        requestAnimationFrame(drawPill);
+      }
+      drawPill();
+    });
+
+    /* ── Progress Dashboard ── */
+    var chapters = [
+      { num: 1, title: 'Sampling & Reconstruction' },
+      { num: 2, title: 'Discrete Signals & LTI Systems' },
+      { num: 3, title: 'The Z-Transform' },
+      { num: 4, title: 'DTFT, DFT, DFS & FFT' },
+      { num: 5, title: 'FIR Filters' },
+      { num: 6, title: 'IIR Filters' },
+      { num: 7, title: 'Filter Design Capstone' }
+    ];
+
+    var progressList = document.getElementById('progressList');
+    if (progressList) {
+      chapters.forEach(function(ch) {
+        var pct = parseInt(localStorage.getItem('dsp_ch' + ch.num + '_progress') || '0', 10);
+        var div = document.createElement('div');
+        div.className = 'progress-item';
+        div.innerHTML = '<span class="chapter-name">Ch ' + ch.num + ': ' + ch.title + '</span>' +
+          '<div class="progress-bar"><div class="fill" style="width:' + pct + '%"></div></div>' +
+          '<span class="percent">' + pct + '%</span>';
+        progressList.appendChild(div);
+      });
+    }
+
+    document.getElementById('resetProgress')?.addEventListener('click', function() {
+      if (confirm('Reset all progress? This cannot be undone.')) {
+        chapters.forEach(function(ch) {
+          localStorage.removeItem('dsp_ch' + ch.num + '_progress');
+        });
+        window.location.reload();
+      }
+    });
+
+    /* ── Hide loader after init ── */
+    setTimeout(function() {
+      var loader = document.getElementById('loader');
+      if (loader) loader.style.display = 'none';
+    }, 1500);
+
+  })();
+  </script>
+</body>
+</html>

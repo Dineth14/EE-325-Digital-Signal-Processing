@@ -8,7 +8,7 @@
     { num: '01', title: 'Sampling & Reconstruction', path: 'chapters/01-sampling-reconstruction/' },
     { num: '02', title: 'Discrete Signals & LTI', path: 'chapters/02-discrete-signals-lti/' },
     { num: '03', title: 'The Z-Transform', path: 'chapters/03-z-transform/' },
-    { num: '04', title: 'DTFT, DFT, DFS & FFT', path: 'chapters/04-dtft-dft-dfs/' },
+    { num: '04', title: 'DTFT, DFT, DFS & FFT', path: 'chapters/04-frequency-analysis/' },
     { num: '05', title: 'FIR Filters', path: 'chapters/05-fir-filters/' },
     { num: '06', title: 'IIR Filters', path: 'chapters/06-iir-filters/' },
     { num: '07', title: 'Filter Design Capstone', path: 'chapters/07-filter-design/' }

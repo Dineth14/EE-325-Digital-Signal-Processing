@@ -1,0 +1,310 @@
+/* ═══════════════════════════════════════════════════════
+   DSP Interactive Textbook — Component Overrides
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Landing Page Hero ── */
+.landing-hero {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  min-height: 600px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+}
+
+.landing-hero canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.landing-hero .hero-text {
+  position: relative;
+  z-index: 3;
+}
+
+.landing-hero h1 {
+  font-family: var(--font-display);
+  font-size: 3.5rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 40px rgba(0, 0, 0, 0.5);
+}
+
+.landing-hero .tagline {
+  font-size: 1.3rem;
+  color: var(--text-muted);
+  margin-bottom: 2rem;
+}
+
+.landing-hero .cta-row {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ── Concepts Belt ── */
+.concepts-belt {
+  padding: 3rem 2rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  background: var(--surface-primary);
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+/* ── Chapter Grid ── */
+.chapter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+  padding: 3rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.chapter-card {
+  background: var(--surface-secondary);
+  border-radius: 12px;
+  overflow: hidden;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.chapter-card .card-preview {
+  height: 140px;
+  background: var(--bg-void);
+  position: relative;
+  overflow: hidden;
+}
+
+.chapter-card .card-preview canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.chapter-card .card-body {
+  padding: 1.25rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.chapter-card .card-chapter-num {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--accent-amber);
+  margin-bottom: 0.25rem;
+}
+
+.chapter-card .card-title {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.chapter-card .card-desc {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  flex: 1;
+  margin-bottom: 0.75rem;
+}
+
+.chapter-card .card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.chapter-card .card-progress {
+  height: 3px;
+  background: var(--border-subtle);
+}
+
+.chapter-card .card-progress .fill {
+  height: 100%;
+  background: var(--accent-cyan);
+  transition: width 0.5s;
+}
+
+/* ── Fundamental Transforms Section ── */
+.transforms-section {
+  padding: 4rem 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.transforms-section h2 {
+  text-align: center;
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  margin-bottom: 0.5rem;
+}
+
+.transforms-section .section-subtitle {
+  text-align: center;
+  color: var(--text-dim);
+  margin-bottom: 2rem;
+}
+
+.transforms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: 1.25rem;
+}
+
+.transform-card {
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 1.5rem;
+  transition: all 0.3s var(--ease-standard);
+}
+
+.transform-card:hover {
+  border-color: var(--accent-cyan);
+  transform: translateY(-2px);
+}
+
+.transform-card .card-name {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-amber);
+  margin-bottom: 0.75rem;
+}
+
+.transform-card .card-equation {
+  text-align: center;
+  padding: 0.5rem 0;
+  margin-bottom: 0.75rem;
+}
+
+.transform-card .card-explain {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* ── Progress Dashboard ── */
+.progress-dashboard {
+  padding: 3rem 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.progress-dashboard h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.progress-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.progress-item .chapter-name {
+  min-width: 200px;
+  font-size: 0.9rem;
+}
+
+.progress-item .progress-bar {
+  flex: 1;
+}
+
+.progress-item .percent {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--accent-cyan);
+  min-width: 40px;
+  text-align: right;
+}
+
+/* ── Footer ── */
+.site-footer {
+  padding: 3rem 2rem;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--surface-primary);
+  text-align: center;
+}
+
+.site-footer .footer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  text-align: left;
+  margin-bottom: 2rem;
+}
+
+.site-footer h4 {
+  font-size: 0.85rem;
+  color: var(--accent-cyan);
+  margin-bottom: 0.75rem;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.site-footer ul {
+  list-style: none;
+  padding: 0;
+}
+
+.site-footer li {
+  padding: 0.2rem 0;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.site-footer a {
+  color: var(--text-muted);
+}
+
+.site-footer .copyright {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 1.5rem;
+}
+
+/* ── Section Headers ── */
+.section-header {
+  margin: 3rem 0 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.section-header h2 {
+  margin: 0;
+}
+
+.section-header .section-desc {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  margin-top: 0.3rem;
+}
+
+@media (max-width: 768px) {
+  .landing-hero h1 { font-size: 2rem; }
+  .landing-hero .tagline { font-size: 1rem; }
+  .chapter-grid { grid-template-columns: 1fr; padding: 2rem 1rem; }
+  .transforms-grid { grid-template-columns: 1fr; }
+  .chapter-hero h1 { font-size: 1.6rem; }
+  .chapter-hero { height: 180px; }
+}

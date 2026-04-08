@@ -1,0 +1,371 @@
+/* ═══════════════════════════════════════════════════════
+   DSP Interactive Textbook — Animations
+   ═══════════════════════════════════════════════════════ */
+
+/* ── CRT Scanline Overlay ── */
+.scanline-overlay {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 0, 0, 0.03) 2px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
+  border-radius: inherit;
+  z-index: 2;
+}
+
+/* ── Signal Pulse Entrance Animation ── */
+@keyframes signalPulse {
+  0% { border-left-color: var(--accent-cyan); box-shadow: -2px 0 10px rgba(0, 229, 255, 0.4); }
+  50% { border-left-color: var(--accent-cyan); box-shadow: -2px 0 20px rgba(0, 229, 255, 0.6); }
+  100% { border-left-color: transparent; box-shadow: none; }
+}
+
+.signal-pulse-enter {
+  animation: signalPulse 0.8s var(--ease-standard) forwards;
+}
+
+/* ── FFT Loading Indicator ── */
+.fft-loader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
+  height: 40px;
+  padding: 0.5rem;
+}
+
+.fft-loader .bar {
+  width: 6px;
+  border-radius: 3px 3px 0 0;
+  background: var(--accent-cyan);
+  animation: fftBounce 1.2s ease-in-out infinite;
+}
+
+.fft-loader .bar:nth-child(1) { height: 30%; animation-delay: 0s; }
+.fft-loader .bar:nth-child(2) { height: 60%; animation-delay: 0.1s; }
+.fft-loader .bar:nth-child(3) { height: 90%; animation-delay: 0.2s; }
+.fft-loader .bar:nth-child(4) { height: 50%; animation-delay: 0.3s; }
+.fft-loader .bar:nth-child(5) { height: 70%; animation-delay: 0.4s; }
+
+@keyframes fftBounce {
+  0%, 100% { transform: scaleY(0.3); opacity: 0.5; }
+  50% { transform: scaleY(1); opacity: 1; }
+}
+
+/* ── Glowing Cursor Trail (Canvas Overlay) ── */
+.canvas-interactive {
+  position: relative;
+}
+
+.canvas-interactive .cursor-glow {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
+  box-shadow: 0 0 8px var(--accent-cyan), 0 0 16px rgba(0, 229, 255, 0.3);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 5;
+  transform: translate(-50%, -50%);
+}
+
+.canvas-interactive:hover .cursor-glow {
+  opacity: 0.7;
+}
+
+/* ── Hero Banner ── */
+.chapter-hero {
+  position: relative;
+  width: 100%;
+  height: 240px;
+  overflow: hidden;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  background: var(--bg-void);
+}
+
+.chapter-hero canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.chapter-hero .hero-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2rem;
+  z-index: 3;
+  background: linear-gradient(90deg, rgba(6, 11, 24, 0.85) 0%, rgba(6, 11, 24, 0.3) 100%);
+}
+
+.chapter-hero .chapter-pill {
+  margin-bottom: 0.75rem;
+}
+
+.chapter-hero h1 {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  margin: 0;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+}
+
+.chapter-hero .subtitle {
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+/* ── Accordion ── */
+.accordion {
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  margin-bottom: 0.75rem;
+  overflow: hidden;
+}
+
+.accordion-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  background: var(--surface-secondary);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s;
+}
+
+.accordion-header:hover {
+  background: rgba(0, 229, 255, 0.04);
+}
+
+.accordion-arrow {
+  font-size: 0.8rem;
+  color: var(--accent-cyan);
+  transition: transform 0.3s var(--ease-standard);
+  flex-shrink: 0;
+}
+
+.accordion.open .accordion-arrow {
+  transform: rotate(90deg);
+}
+
+.accordion-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  flex: 1;
+}
+
+.accordion-summary {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin-left: auto;
+}
+
+.accordion-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s var(--ease-standard);
+}
+
+.accordion.open .accordion-body {
+  max-height: 5000px;
+}
+
+.accordion-content {
+  padding: 1.5rem;
+  opacity: 0;
+  transition: opacity 0.3s 0.1s;
+}
+
+.accordion.open .accordion-content {
+  opacity: 1;
+}
+
+/* ── Learning Objectives ── */
+.objectives-list {
+  list-style: none;
+  padding: 0;
+}
+
+.objectives-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.objectives-list .checkbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 2px solid var(--accent-cyan);
+  flex-shrink: 0;
+  margin-top: 2px;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.objectives-list .checkbox.checked {
+  background: var(--accent-cyan);
+  color: var(--bg-void);
+}
+
+.objectives-list .checkbox.checked::after {
+  content: '✓';
+  font-size: 0.7rem;
+  font-weight: bold;
+}
+
+/* ── Scroll Chevron ── */
+@keyframes bounceDown {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(8px); }
+}
+
+.scroll-indicator {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: bounceDown 2s ease-in-out infinite;
+  color: var(--text-dim);
+  font-size: 1.5rem;
+  z-index: 5;
+}
+
+/* ── Fade In on Scroll ── */
+.fade-in-up {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s var(--ease-standard);
+}
+
+.fade-in-up.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Pulsing Dot ── */
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.4); }
+}
+
+.pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* ── Chapter Card Hover ── */
+.chapter-card {
+  transition: all 0.3s var(--ease-standard);
+  border: 1px solid var(--border-subtle);
+}
+
+.chapter-card:hover {
+  transform: scale(1.03);
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 30px rgba(0, 229, 255, 0.1);
+}
+
+/* ── Help Panel Slide-in ── */
+.help-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 360px;
+  max-width: 90vw;
+  height: 100vh;
+  background: var(--surface-primary);
+  border-left: 1px solid var(--border-subtle);
+  padding: 2rem;
+  z-index: 1000;
+  transform: translateX(100%);
+  transition: transform 0.35s var(--ease-standard);
+  overflow-y: auto;
+}
+
+.help-panel.open {
+  transform: translateX(0);
+}
+
+.help-panel-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 11, 24, 0.6);
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.help-panel-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ── Progress Bar ── */
+.progress-bar {
+  width: 100%;
+  height: 3px;
+  background: var(--border-subtle);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-bar .fill {
+  height: 100%;
+  background: var(--accent-cyan);
+  border-radius: 2px;
+  transition: width 0.5s var(--ease-standard);
+}
+
+/* ── Concept Pill Animations (Landing) ── */
+@keyframes miniPulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+.concept-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  transition: all 0.3s var(--ease-standard);
+  white-space: nowrap;
+}
+
+.concept-pill:hover {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+  background: rgba(0, 229, 255, 0.06);
+}
+
+.concept-pill canvas { border-radius: 4px; }
+
+/* ── Glow Effect ── */
+.glow-cyan { text-shadow: 0 0 10px rgba(0, 229, 255, 0.3); }
+.glow-violet { text-shadow: 0 0 10px rgba(179, 136, 255, 0.3); }
+.glow-amber { text-shadow: 0 0 10px rgba(255, 202, 40, 0.3); }

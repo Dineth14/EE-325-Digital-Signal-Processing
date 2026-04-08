@@ -1,217 +1,247 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Ch 5 — FIR Filter Design</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css"/>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
   <link rel="stylesheet" href="../../assets/css/main.css"/>
   <link rel="stylesheet" href="../../assets/css/math.css"/>
   <link rel="stylesheet" href="../../assets/css/animations.css"/>
+  <link rel="stylesheet" href="../../assets/css/components.css"/>
 </head>
 <body>
-<nav class="sidebar" id="sidebar">
-  <div class="sidebar-header"><a href="../../index.html" class="sidebar-logo">DSP<span class="accent">book</span></a></div>
-  <ul class="sidebar-tree" id="sidebarTree"></ul>
-</nav>
-<main class="content" id="mainContent">
-
-<section class="chapter-hero">
-  <canvas id="heroCanvas"></canvas>
-  <div class="hero-overlay">
-    <span class="hero-chip">Chapter 5</span>
-    <h1>FIR Filter Design</h1>
-    <p class="hero-sub">Design finite impulse response filters using windowed-sinc methods and understand linear phase.</p>
-  </div>
-</section>
-
-<section class="section" id="objectives">
-  <h2>Learning Objectives</h2>
-  <ul class="objectives-list">
-    <li class="objective-item"><input type="checkbox" id="obj1"/><label for="obj1">Design FIR lowpass, highpass, and bandpass filters using the windowed-sinc method.</label></li>
-    <li class="objective-item"><input type="checkbox" id="obj2"/><label for="obj2">Compare window functions and their impact on sidelobe levels and transition width.</label></li>
-    <li class="objective-item"><input type="checkbox" id="obj3"/><label for="obj3">Classify FIR filters into the four linear-phase types and state their constraints.</label></li>
-    <li class="objective-item"><input type="checkbox" id="obj4"/><label for="obj4">Relate filter order to transition bandwidth and stopband attenuation.</label></li>
-  </ul>
-</section>
-
-<section class="section" id="theory">
-  <h2>Theory</h2>
-
-  <div class="accordion">
-    <button class="accordion-btn" aria-expanded="false">§5.1 Ideal vs. Realizable FIR Filters</button>
-    <div class="accordion-body">
-      <p>An <strong>ideal lowpass filter</strong> has frequency response $H_d(e^{j\omega})=\begin{cases}1,&|\omega|\le\omega_c\\0,&\omega_c<|\omega|\le\pi\end{cases}$.</p>
-      <p>Its impulse response is the sinc function:</p>
-      <div class="equation-box">$$h_d[n]=\frac{\sin(\omega_c n)}{\pi n}, \quad -\infty < n < \infty$$</div>
-      <p>This is noncausal and infinite-length — not realizable. We truncate and window it to create a practical FIR filter.</p>
-    </div>
-  </div>
-
-  <div class="accordion">
-    <button class="accordion-btn" aria-expanded="false">§5.2 Windowed-Sinc Design Method</button>
-    <div class="accordion-body">
-      <p>The design procedure:</p>
-      <ol>
-        <li>Compute the ideal impulse response $h_d[n]$ for the desired frequency response.</li>
-        <li>Truncate to $N$ samples: $h_t[n]=h_d[n]$ for $0\le n\le N-1$.</li>
-        <li>Apply a window: $h[n]=h_t[n]\cdot w[n]$.</li>
-      </ol>
-      <div class="equation-box">$$h[n]=\frac{\sin[\omega_c(n-M)]}{\pi(n-M)}\cdot w[n], \quad M=\frac{N-1}{2}$$</div>
-      <p>The window controls the <strong>tradeoff</strong> between main-lobe width (transition band) and sidelobe level (stopband attenuation).</p>
-    </div>
-  </div>
-
-  <div class="accordion">
-    <button class="accordion-btn" aria-expanded="false">§5.3 Window Functions Comparison</button>
-    <div class="accordion-body">
-      <p>Common windows and their properties (for the same length $N$):</p>
-      <table class="math-table">
-        <thead><tr><th>Window</th><th>Main Lobe Width</th><th>Peak Sidelobe</th><th>Min. Stopband Atten.</th></tr></thead>
-        <tbody>
-          <tr><td>Rectangular</td><td>$4\pi/N$</td><td>$-13$ dB</td><td>$21$ dB</td></tr>
-          <tr><td>Hanning</td><td>$8\pi/N$</td><td>$-31$ dB</td><td>$44$ dB</td></tr>
-          <tr><td>Hamming</td><td>$8\pi/N$</td><td>$-42$ dB</td><td>$53$ dB</td></tr>
-          <tr><td>Blackman</td><td>$12\pi/N$</td><td>$-58$ dB</td><td>$74$ dB</td></tr>
-          <tr><td>Kaiser ($\beta$=5)</td><td>Adjustable</td><td>$-36$ dB</td><td>Adjustable</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="accordion">
-    <button class="accordion-btn" aria-expanded="false">§5.4 Linear Phase FIR Filters</button>
-    <div class="accordion-body">
-      <p>An FIR filter has <strong>generalized linear phase</strong> if $H(e^{j\omega})=A(\omega)\,e^{-j(\alpha\omega+\beta)}$, where $A(\omega)$ is a real amplitude function. This requires symmetry of coefficients:</p>
-      <p><strong>Four types:</strong></p>
-      <ul>
-        <li><strong>Type I:</strong> $h[n]=h[N-1-n]$ (symmetric), $N$ odd. All frequency-selective filters possible.</li>
-        <li><strong>Type II:</strong> $h[n]=h[N-1-n]$ (symmetric), $N$ even. Cannot implement highpass ($H(e^{j\pi})=0$).</li>
-        <li><strong>Type III:</strong> $h[n]=-h[N-1-n]$ (anti-symmetric), $N$ odd. Differentiators, Hilbert transforms. $H(e^{j0})=H(e^{j\pi})=0$.</li>
-        <li><strong>Type IV:</strong> $h[n]=-h[N-1-n]$ (anti-symmetric), $N$ even. Differentiators. $H(e^{j0})=0$.</li>
-      </ul>
-      <p>Linear phase ⇒ constant group delay = $(N-1)/2$ samples. This preserves the shape of signals passing through the filter.</p>
-    </div>
-  </div>
-
-  <div class="accordion">
-    <button class="accordion-btn" aria-expanded="false">§5.5 Kaiser Window Design Formula</button>
-    <div class="accordion-body">
-      <p>Kaiser's empirical formulas relate filter specifications to window parameters:</p>
-      <p>Given stopband attenuation $A_s=-20\log_{10}\delta_s$ (dB) and transition width $\Delta\omega$:</p>
-      <div class="equation-box">$$\beta=\begin{cases}0.1102(A_s-8.7),&A_s>50\\0.5842(A_s-21)^{0.4}+0.07886(A_s-21),&21\le A_s\le50\\0,&A_s<21\end{cases}$$</div>
-      <div class="equation-box">$$N=\lceil\frac{A_s-7.95}{2.285\,\Delta\omega}\rceil+1$$</div>
-    </div>
-  </div>
-</section>
-
-<section class="section" id="simulations">
-  <h2>Interactive Simulations</h2>
-
-  <div class="sim-container">
-    <div class="sim-header"><span class="sim-chip">SIM 5.1</span><h3>FIR Filter Designer</h3></div>
-    <div class="sim-layout">
-      <div class="sim-canvas-wrap"><canvas id="firCanvas"></canvas><div class="scanline-overlay"></div></div>
-      <div class="sim-controls">
-        <label>Type<select id="firType"><option value="lowpass">Lowpass</option><option value="highpass">Highpass</option><option value="bandpass">Bandpass</option></select></label>
-        <label>Cutoff (×π)<input type="range" id="firCutoff" min="0.05" max="0.95" step="0.01" value="0.3"/><span id="firCutoffVal">0.30π</span></label>
-        <label>Order<input type="range" id="firOrder" min="5" max="101" step="2" value="21"/><span id="firOrderVal">21</span></label>
-        <label>Window<select id="firWindow"><option value="rectangular">Rectangular</option><option value="hanning">Hanning</option><option value="hamming" selected>Hamming</option><option value="blackman">Blackman</option><option value="kaiser">Kaiser (β=5)</option></select></label>
+  <button class="sidebar-toggle" aria-label="Toggle sidebar">☰</button>
+  <div class="app-layout">
+    <nav class="sidebar" aria-label="Chapter navigation">
+      <div class="sidebar-header">
+        <h2>FIR Filter Design</h2>
+        <p class="subtitle">Chapter 5</p>
       </div>
-    </div>
-  </div>
+      <div class="sidebar-nav"></div>
+    </nav>
 
-  <div class="sim-container">
-    <div class="sim-header"><span class="sim-chip">SIM 5.2</span><h3>Windowing Lab</h3></div>
-    <div class="sim-layout">
-      <div class="sim-canvas-wrap"><canvas id="windowCanvas"></canvas><div class="scanline-overlay"></div></div>
-      <div class="sim-controls">
-        <label>Window Length N<input type="range" id="winN" min="8" max="128" value="32"/><span id="winNVal">32</span></label>
-        <fieldset style="border:1px solid var(--border);padding:0.5rem;border-radius:6px;">
-          <legend style="color:var(--text-muted);font-size:0.85rem;">Show Windows</legend>
-          <label><input type="checkbox" id="win_rectangular" checked/> Rectangular</label><br/>
-          <label><input type="checkbox" id="win_hanning" checked/> Hanning</label><br/>
-          <label><input type="checkbox" id="win_hamming"/> Hamming</label><br/>
-          <label><input type="checkbox" id="win_blackman"/> Blackman</label><br/>
-          <label><input type="checkbox" id="win_kaiser"/> Kaiser</label>
-        </fieldset>
+    <main class="main-content">
+      <div class="content-wrapper">
+
+        <div class="chapter-hero">
+          <canvas id="heroCanvas"></canvas>
+          <div class="scanline-overlay"></div>
+          <div class="hero-content">
+            <span class="pill chapter-pill">Chapter 5</span>
+            <h1>FIR Filter Design</h1>
+            <p class="hero-sub">Design finite impulse response filters using windowed-sinc methods and understand linear phase.</p>
+          </div>
+        </div>
+
+        <div class="glass-card fade-in-up">
+          <h2>Learning Objectives</h2>
+          <ul class="objectives-list">
+            <li><span class="checkbox"></span>Design FIR lowpass, highpass, and bandpass filters using the windowed-sinc method.</li>
+            <li><span class="checkbox"></span>Compare window functions and their impact on sidelobe levels and transition width.</li>
+            <li><span class="checkbox"></span>Classify FIR filters into the four linear-phase types and state their constraints.</li>
+            <li><span class="checkbox"></span>Relate filter order to transition bandwidth and stopband attenuation.</li>
+          </ul>
+        </div>
+
+        <div class="section-header"><h2>Theory</h2></div>
+
+        <div class="accordion" data-objective="1">
+          <div class="accordion-header">
+            <span class="accordion-arrow">▶</span>
+            <h3>§5.1 Ideal vs. Realizable FIR Filters</h3>
+            <span class="accordion-summary">Sinc impulse response, truncation requirements</span>
+          </div>
+          <div class="accordion-body"><div class="accordion-content">
+            <p>An <strong>ideal lowpass filter</strong> has frequency response $H_d(e^{j\omega})=\begin{cases}1,&|\omega|\le\omega_c\\0,&\omega_c<|\omega|\le\pi\end{cases}$.</p>
+            <p>Its impulse response is the sinc function:</p>
+            <div class="equation-box">$$h_d[n]=\frac{\sin(\omega_c n)}{\pi n}, \quad -\infty < n < \infty$$</div>
+            <p>This is noncausal and infinite-length — not realizable. We truncate and window it to create a practical FIR filter.</p>
+          </div></div>
+        </div>
+
+        <div class="accordion" data-objective="1">
+          <div class="accordion-header">
+            <span class="accordion-arrow">▶</span>
+            <h3>§5.2 Windowed-Sinc Design Method</h3>
+            <span class="accordion-summary">Three-step design procedure</span>
+          </div>
+          <div class="accordion-body"><div class="accordion-content">
+            <p>The design procedure:</p>
+            <ol>
+              <li>Compute the ideal impulse response $h_d[n]$ for the desired frequency response.</li>
+              <li>Truncate to $N$ samples: $h_t[n]=h_d[n]$ for $0\le n\le N-1$.</li>
+              <li>Apply a window: $h[n]=h_t[n]\cdot w[n]$.</li>
+            </ol>
+            <div class="equation-box">$$h[n]=\frac{\sin[\omega_c(n-M)]}{\pi(n-M)}\cdot w[n], \quad M=\frac{N-1}{2}$$</div>
+            <p>The window controls the <strong>tradeoff</strong> between main-lobe width (transition band) and sidelobe level (stopband attenuation).</p>
+          </div></div>
+        </div>
+
+        <div class="accordion" data-objective="2">
+          <div class="accordion-header">
+            <span class="accordion-arrow">▶</span>
+            <h3>§5.3 Window Functions Comparison</h3>
+            <span class="accordion-summary">Properties of common window functions</span>
+          </div>
+          <div class="accordion-body"><div class="accordion-content">
+            <p>Common windows and their properties (for the same length $N$):</p>
+            <table class="math-table">
+              <thead><tr><th>Window</th><th>Main Lobe Width</th><th>Peak Sidelobe</th><th>Min. Stopband Atten.</th></tr></thead>
+              <tbody>
+                <tr><td>Rectangular</td><td>$4\pi/N$</td><td>$-13$ dB</td><td>$21$ dB</td></tr>
+                <tr><td>Hanning</td><td>$8\pi/N$</td><td>$-31$ dB</td><td>$44$ dB</td></tr>
+                <tr><td>Hamming</td><td>$8\pi/N$</td><td>$-42$ dB</td><td>$53$ dB</td></tr>
+                <tr><td>Blackman</td><td>$12\pi/N$</td><td>$-58$ dB</td><td>$74$ dB</td></tr>
+                <tr><td>Kaiser ($\beta$=5)</td><td>Adjustable</td><td>$-36$ dB</td><td>Adjustable</td></tr>
+              </tbody>
+            </table>
+          </div></div>
+        </div>
+
+        <div class="accordion" data-objective="3">
+          <div class="accordion-header">
+            <span class="accordion-arrow">▶</span>
+            <h3>§5.4 Linear Phase FIR Filters</h3>
+            <span class="accordion-summary">Four types and symmetry constraints</span>
+          </div>
+          <div class="accordion-body"><div class="accordion-content">
+            <p>An FIR filter has <strong>generalized linear phase</strong> if $H(e^{j\omega})=A(\omega)\,e^{-j(\alpha\omega+\beta)}$, where $A(\omega)$ is a real amplitude function. This requires symmetry of coefficients:</p>
+            <p><strong>Four types:</strong></p>
+            <ul>
+              <li><strong>Type I:</strong> $h[n]=h[N-1-n]$ (symmetric), $N$ odd. All frequency-selective filters possible.</li>
+              <li><strong>Type II:</strong> $h[n]=h[N-1-n]$ (symmetric), $N$ even. Cannot implement highpass ($H(e^{j\pi})=0$).</li>
+              <li><strong>Type III:</strong> $h[n]=-h[N-1-n]$ (anti-symmetric), $N$ odd. Differentiators, Hilbert transforms. $H(e^{j0})=H(e^{j\pi})=0$.</li>
+              <li><strong>Type IV:</strong> $h[n]=-h[N-1-n]$ (anti-symmetric), $N$ even. Differentiators. $H(e^{j0})=0$.</li>
+            </ul>
+            <p>Linear phase ⇒ constant group delay = $(N-1)/2$ samples. This preserves the shape of signals passing through the filter.</p>
+          </div></div>
+        </div>
+
+        <div class="accordion" data-objective="4">
+          <div class="accordion-header">
+            <span class="accordion-arrow">▶</span>
+            <h3>§5.5 Kaiser Window Design Formula</h3>
+            <span class="accordion-summary">Empirical order and β formulas</span>
+          </div>
+          <div class="accordion-body"><div class="accordion-content">
+            <p>Kaiser's empirical formulas relate filter specifications to window parameters:</p>
+            <p>Given stopband attenuation $A_s=-20\log_{10}\delta_s$ (dB) and transition width $\Delta\omega$:</p>
+            <div class="equation-box">$$\beta=\begin{cases}0.1102(A_s-8.7),&A_s>50\\0.5842(A_s-21)^{0.4}+0.07886(A_s-21),&21\le A_s\le50\\0,&A_s<21\end{cases}$$</div>
+            <div class="equation-box">$$N=\lceil\frac{A_s-7.95}{2.285\,\Delta\omega}\rceil+1$$</div>
+          </div></div>
+        </div>
+
+        <div class="section-header"><h2>Interactive Simulations</h2></div>
+
+        <div class="sim-container fade-in-up">
+          <div class="sim-header"><h3>SIM 5.1 — FIR Filter Designer</h3></div>
+          <div class="sim-body">
+            <div class="sim-controls">
+              <label>Type<select id="firType"><option value="lowpass">Lowpass</option><option value="highpass">Highpass</option><option value="bandpass">Bandpass</option></select></label>
+              <label>Cutoff (×π)<input type="range" id="firCutoff" min="0.05" max="0.95" step="0.01" value="0.3"/><span id="firCutoffVal">0.30π</span></label>
+              <label>Order<input type="range" id="firOrder" min="5" max="101" step="2" value="21"/><span id="firOrderVal">21</span></label>
+              <label>Window<select id="firWindow"><option value="rectangular">Rectangular</option><option value="hanning">Hanning</option><option value="hamming" selected>Hamming</option><option value="blackman">Blackman</option><option value="kaiser">Kaiser (β=5)</option></select></label>
+            </div>
+            <div class="sim-canvas-wrap canvas-interactive"><canvas id="firCanvas"></canvas><div class="scanline-overlay"></div></div>
+          </div>
+        </div>
+
+        <div class="sim-container fade-in-up">
+          <div class="sim-header"><h3>SIM 5.2 — Windowing Lab</h3></div>
+          <div class="sim-body">
+            <div class="sim-controls">
+              <label>Window Length N<input type="range" id="winN" min="8" max="128" value="32"/><span id="winNVal">32</span></label>
+              <fieldset style="border:1px solid var(--border);padding:0.5rem;border-radius:6px;">
+                <legend style="color:var(--text-muted);font-size:0.85rem;">Show Windows</legend>
+                <label><input type="checkbox" id="win_rectangular" checked/> Rectangular</label><br/>
+                <label><input type="checkbox" id="win_hanning" checked/> Hanning</label><br/>
+                <label><input type="checkbox" id="win_hamming"/> Hamming</label><br/>
+                <label><input type="checkbox" id="win_blackman"/> Blackman</label><br/>
+                <label><input type="checkbox" id="win_kaiser"/> Kaiser</label>
+              </fieldset>
+            </div>
+            <div class="sim-canvas-wrap canvas-interactive"><canvas id="windowCanvas"></canvas><div class="scanline-overlay"></div></div>
+          </div>
+        </div>
+
+        <div class="sim-container fade-in-up">
+          <div class="sim-header"><h3>SIM 5.3 — Linear Phase Explorer</h3></div>
+          <div class="sim-body">
+            <div class="sim-controls">
+              <label>Phase Type<select id="lpType"><option value="1">Type I (odd, symmetric)</option><option value="2">Type II (even, symmetric)</option><option value="3">Type III (odd, anti-sym)</option><option value="4">Type IV (even, anti-sym)</option></select></label>
+              <label>Filter Length<input type="range" id="lpLen" min="5" max="51" value="11"/><span id="lpLenVal">11</span></label>
+            </div>
+            <div class="sim-canvas-wrap canvas-interactive"><canvas id="phaseCanvas"></canvas><div class="scanline-overlay"></div></div>
+          </div>
+        </div>
+
+        <div class="section-header"><h2>Key Equations</h2></div>
+        <div class="equation-grid">
+          <div class="equation-card"><div class="equation-card-inner"><div class="equation-card-front"><h4>Windowed Sinc</h4><p>$$h[n]=\frac{\sin[\omega_c(n-M)]}{\pi(n-M)}\cdot w[n]$$</p></div><div class="equation-card-back"><p>Fundamental FIR design formula. The window shapes the tradeoff between transition width and stopband attenuation.</p></div></div></div>
+          <div class="equation-card"><div class="equation-card-inner"><div class="equation-card-front"><h4>Group Delay</h4><p>$$\tau_g = \frac{N-1}{2}\text{ samples}$$</p></div><div class="equation-card-back"><p>Constant group delay for all linear-phase FIR filters. Signal shape is preserved.</p></div></div></div>
+          <div class="equation-card"><div class="equation-card-inner"><div class="equation-card-front"><h4>Kaiser Order</h4><p>$$N=\lceil\frac{A_s-7.95}{2.285\,\Delta\omega}\rceil+1$$</p></div><div class="equation-card-back"><p>Empirical formula relating stopband attenuation and transition width to filter order.</p></div></div></div>
+          <div class="equation-card"><div class="equation-card-inner"><div class="equation-card-front"><h4>Linear Phase Condition</h4><p>$$h[n]=\pm h[N\!-\!1\!-\!n]$$</p></div><div class="equation-card-back"><p>Symmetric (+) or anti-symmetric (−) impulse response guarantees linear phase.</p></div></div></div>
+        </div>
+
+        <div class="section-header"><h2>Chapter Quiz</h2></div>
+        <div class="quiz-card" data-correct="1">
+          <p class="quiz-question">1. Which window gives the best stopband attenuation for a given filter length?</p>
+          <div class="quiz-options">
+            <div class="quiz-option">Rectangular</div>
+            <div class="quiz-option">Blackman</div>
+            <div class="quiz-option">Hanning</div>
+            <div class="quiz-option">All windows give the same</div>
+          </div>
+          <div class="quiz-explanation">The Blackman window achieves the highest stopband attenuation (74 dB) among common fixed windows, at the cost of a wider main lobe (transition band).</div>
+        </div>
+        <div class="quiz-card" data-correct="2">
+          <p class="quiz-question">2. A Type II FIR filter (even length, symmetric) cannot implement:</p>
+          <div class="quiz-options">
+            <div class="quiz-option">Lowpass filter</div>
+            <div class="quiz-option">Bandpass filter</div>
+            <div class="quiz-option">Highpass filter</div>
+            <div class="quiz-option">Allpass filter</div>
+          </div>
+          <div class="quiz-explanation">Type II filters have $H(e^{j\pi})=0$ due to their symmetry and even length, making them unable to realize a highpass response that requires gain at $\omega=\pi$.</div>
+        </div>
+        <div class="quiz-card" data-correct="0">
+          <p class="quiz-question">3. Increasing FIR filter order while keeping the window the same will:</p>
+          <div class="quiz-options">
+            <div class="quiz-option">Narrow the transition band</div>
+            <div class="quiz-option">Increase stopband attenuation</div>
+            <div class="quiz-option">Change the window's sidelobe level</div>
+            <div class="quiz-option">Nothing changes</div>
+          </div>
+          <div class="quiz-explanation">The transition band width is inversely proportional to the filter order. The stopband attenuation is determined primarily by the window type, not the order.</div>
+        </div>
+
+        <a href="../06-iir-filters/index.html" class="next-chapter-card">
+          <div class="preview" style="display:flex;align-items:center;justify-content:center;color:var(--text-dim)">Ch 6</div>
+          <div class="info">
+            <span class="label">Next Chapter</span>
+            <h3 class="title">IIR Filter Design</h3>
+            <p class="desc">Design infinite impulse response filters using Butterworth, Chebyshev, and bilinear transform methods.</p>
+          </div>
+          <span class="arrow">→</span>
+        </a>
+
       </div>
-    </div>
+    </main>
   </div>
 
-  <div class="sim-container">
-    <div class="sim-header"><span class="sim-chip">SIM 5.3</span><h3>Linear Phase Explorer</h3></div>
-    <div class="sim-layout">
-      <div class="sim-canvas-wrap"><canvas id="phaseCanvas"></canvas><div class="scanline-overlay"></div></div>
-      <div class="sim-controls">
-        <label>Phase Type<select id="lpType"><option value="1">Type I (odd, symmetric)</option><option value="2">Type II (even, symmetric)</option><option value="3">Type III (odd, anti-sym)</option><option value="4">Type IV (even, anti-sym)</option></select></label>
-        <label>Filter Length<input type="range" id="lpLen" min="5" max="51" value="11"/><span id="lpLenVal">11</span></label>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="section" id="equations">
-  <h2>Key Equations</h2>
-  <div class="equation-grid">
-    <div class="equation-card"><div class="equation-card-inner"><div class="equation-card-front"><h4>Windowed Sinc</h4><p>$$h[n]=\frac{\sin[\omega_c(n-M)]}{\pi(n-M)}\cdot w[n]$$</p></div><div class="equation-card-back"><p>Fundamental FIR design formula. The window shapes the tradeoff between transition width and stopband attenuation.</p></div></div></div>
-    <div class="equation-card"><div class="equation-card-inner"><div class="equation-card-front"><h4>Group Delay</h4><p>$$\tau_g = \frac{N-1}{2}\text{ samples}$$</p></div><div class="equation-card-back"><p>Constant group delay for all linear-phase FIR filters. Signal shape is preserved.</p></div></div></div>
-    <div class="equation-card"><div class="equation-card-inner"><div class="equation-card-front"><h4>Kaiser Order</h4><p>$$N=\lceil\frac{A_s-7.95}{2.285\,\Delta\omega}\rceil+1$$</p></div><div class="equation-card-back"><p>Empirical formula relating stopband attenuation and transition width to filter order.</p></div></div></div>
-    <div class="equation-card"><div class="equation-card-inner"><div class="equation-card-front"><h4>Linear Phase Condition</h4><p>$$h[n]=\pm h[N\!-\!1\!-\!n]$$</p></div><div class="equation-card-back"><p>Symmetric (+) or anti-symmetric (−) impulse response guarantees linear phase.</p></div></div></div>
-  </div>
-</section>
-
-<section class="section" id="quiz">
-  <h2>Check Your Understanding</h2>
-  <div class="quiz-card" data-correct="b">
-    <p class="quiz-q"><strong>Q1.</strong> Which window gives the best stopband attenuation for a given filter length?</p>
-    <div class="quiz-options">
-      <button class="quiz-option" data-value="a">Rectangular</button>
-      <button class="quiz-option" data-value="b">Blackman</button>
-      <button class="quiz-option" data-value="c">Hanning</button>
-      <button class="quiz-option" data-value="d">All windows give the same</button>
-    </div>
-  </div>
-  <div class="quiz-card" data-correct="c">
-    <p class="quiz-q"><strong>Q2.</strong> A Type II FIR filter (even length, symmetric) cannot implement:</p>
-    <div class="quiz-options">
-      <button class="quiz-option" data-value="a">Lowpass filter</button>
-      <button class="quiz-option" data-value="b">Bandpass filter</button>
-      <button class="quiz-option" data-value="c">Highpass filter</button>
-      <button class="quiz-option" data-value="d">Allpass filter</button>
-    </div>
-  </div>
-  <div class="quiz-card" data-correct="a">
-    <p class="quiz-q"><strong>Q3.</strong> Increasing FIR filter order while keeping the window the same will:</p>
-    <div class="quiz-options">
-      <button class="quiz-option" data-value="a">Narrow the transition band</button>
-      <button class="quiz-option" data-value="b">Increase stopband attenuation</button>
-      <button class="quiz-option" data-value="c">Change the window's sidelobe level</button>
-      <button class="quiz-option" data-value="d">Nothing changes</button>
-    </div>
-  </div>
-</section>
-
-<section class="section" id="next">
-  <a href="../06-iir-filters/index.html" class="chapter-next-card">
-    <span class="next-label">Next Chapter →</span>
-    <span class="next-title">IIR Filter Design</span>
-  </a>
-</section>
-</main>
-
-<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
-<script src="../../assets/js/theme.js"></script>
-<script src="../../assets/js/plot-utils.js"></script>
-<script src="../../assets/js/dsp-core.js"></script>
-<script src="../../assets/js/nav.js"></script>
-<script src="../../assets/js/katex-render.js"></script>
-<script src="sim/fir-designer.js"></script>
-<script src="sim/windowing.js"></script>
-<script src="sim/linear-phase.js"></script>
+  <script src="../../assets/js/dsp-core.js"></script>
+  <script src="../../assets/js/plot-utils.js"></script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/katex-render.js"></script>
+  <script src="sim/fir-designer.js"></script>
+  <script src="sim/windowing.js"></script>
+  <script src="sim/linear-phase.js"></script>
 <script>
 (function(){
   var hc=document.getElementById('heroCanvas');if(!hc)return;

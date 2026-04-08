@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 1: Sampling & Reconstruction — DSP Textbook</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <link rel="stylesheet" href="../../assets/css/math.css">
+  <link rel="stylesheet" href="../../assets/css/animations.css">
+  <link rel="stylesheet" href="../../assets/css/components.css">
+</head>
+<body>
+  <button class="sidebar-toggle" aria-label="Toggle navigation">☰</button>
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <nav class="sidebar" aria-label="Chapter navigation">
+      <div class="sidebar-header">
+        <h2><a href="../../index.html" style="color:inherit;text-decoration:none">DSP Textbook</a></h2>
+        <p class="subtitle">Interactive Visual Guide</p>
+      </div>
+      <div class="sidebar-nav"></div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="content-wrapper">
+
+        <!-- Hero Banner -->
+        <div class="chapter-hero">
+          <canvas id="heroCanvas" aria-label="Animation showing sampling of a sinusoid with aliasing effect"></canvas>
+          <div class="scanline-overlay"></div>
+          <div class="hero-content">
+            <span class="pill chapter-pill">Chapter 1</span>
+            <h1>Sampling & Reconstruction</h1>
+            <p class="subtitle">From continuous signals to digital representations</p>
+          </div>
+        </div>
+
+        <!-- Learning Objectives -->
+        <div class="glass-card fade-in-up" style="margin-bottom:2rem">
+          <h3 style="margin-bottom:1rem">Learning Objectives</h3>
+          <ul class="objectives-list">
+            <li><span class="checkbox"></span>Understand the mathematical model of ideal sampling using impulse trains</li>
+            <li><span class="checkbox"></span>State and prove the Nyquist-Shannon sampling theorem</li>
+            <li><span class="checkbox"></span>Analyze aliasing in both time and frequency domains</li>
+            <li><span class="checkbox"></span>Derive the signal-to-quantization-noise ratio for uniform quantization</li>
+            <li><span class="checkbox"></span>Compare ideal, zero-order hold, and first-order hold reconstruction</li>
+          </ul>
+        </div>
+
+        <!-- ═══ THEORY SECTIONS ═══ -->
+        <div class="section-header"><h2>Theory</h2></div>
+
+        <!-- § 1.1 -->
+        <div class="accordion open" data-objective="0">
+          <div class="accordion-header">
+            <span class="accordion-arrow">▶</span>
+            <h3>§ 1.1 Continuous vs Discrete Signals</h3>
+            <span class="accordion-summary">Sampling model, impulse train, spectrum of sampled signal</span>
+          </div>
+          <div class="accordion-body"><div class="accordion-content">
+            <p>A continuous-time signal $x(t)$ is defined for all $t \in \mathbb{R}$. <strong>Sampling</strong> converts it to a discrete-time sequence $x[n] = x(nT_s)$ where $T_s$ is the sampling period and $f_s = 1/T_s$ is the sampling frequency.</p>
+
+            <p>We model ideal sampling as multiplication by an impulse train:</p>
+            <div class="equation-box">
+              <span class="eq-label">Ideal Sampling</span>
+              $$x_s(t) = x(t) \cdot p(t) = x(t) \cdot \sum_{n=-\infty}^{\infty} \delta(t - nT_s)$$
+            </div>
+
+            <p>Since $p(t)$ is periodic with period $T_s$, its Fourier series is $p(t) = \frac{1}{T_s}\sum_{k} e^{jk\Omega_s t}$ where $\Omega_s = 2\pi/T_s$. The spectrum of the sampled signal becomes:</p>
+            <div class="equation-box">
+              <span class="eq-label">Sampled Spectrum</span>
+              $$X_s(j\Omega) = \frac{1}{T_s}\sum_{k=-\infty}^{\infty} X\!\left(j(\Omega - k\Omega_s)\right)$$
+            </div>
+
+            <p>This is the fundamental result: the spectrum of the sampled signal is a sum of shifted copies of the original spectrum, each centered at integer multiples of $\Omega_s$. This spectral replication is the basis for understanding both perfect reconstruction and aliasing.</p>
+
+            <div class="derivation">
+              <div class="derivation-step">
+                <span class="step-label">Step 1</span>
+                <p>Express the product in the frequency domain using the convolution property of the Fourier transform: $X_s(j\Omega) = \frac{1}{2\pi} X(j\Omega) * P(j\Omega)$</p>
+              </div>
+              <div class="derivation-step">
+                <span class="step-label">Step 2</span>
+                <p>The Fourier transform of the impulse train is itself an impulse train: $P(j\Omega) = \Omega_s \sum_k \delta(\Omega - k\Omega_s)$</p>
+              </div>
+              <div class="derivation-step">
+                <span class="step-label">Step 3</span>
+                <p>Substituting and using the sifting property of $\delta$: $X_s(j\Omega) = \frac{1}{T_s}\sum_k X(j(\Omega - k\Omega_s))$</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <!-- § 1.2 -->
+        <div class="accordion" data-objective="1">
+          <div class="accordion-header">
+            <span class="accordion-arrow">▶</span>
+            <h3>§ 1.2 Nyquist-Shannon Sampling Theorem</h3>
+            <span class="accordion-summary">Perfect reconstruction conditions and sinc interpolation</span>
+          </div>
+          <div class="accordion-body"><div class="accordion-content">
+            <p><strong>Theorem (Nyquist-Shannon):</strong> If $x(t)$ is bandlimited with $X(j\Omega) = 0$ for $|\Omega| > \Omega_{\max}$, then $x(t)$ can be perfectly reconstructed from its samples $x[n] = x(nT_s)$ if and only if:</p>
+            <div class="equation-box">
+              <span class="eq-label">Nyquist Criterion</span>
+              $$\Omega_s > 2\Omega_{\max} \quad \Leftrightarrow \quad f_s > 2f_{\max}$$
+            </div>
+
+            <p>The minimum sampling rate $f_s = 2f_{\max}$ is the <strong>Nyquist rate</strong>. The frequency $f_s/2$ is the <strong>Nyquist frequency</strong> — the highest frequency representable without aliasing.</p>
+
+            <p><strong>Proof:</strong> When $\Omega_s > 2\Omega_{\max}$, the shifted copies $X(j(\Omega - k\Omega_s))$ do not overlap. Thus, $X(j\Omega)$ can be recovered by applying an ideal lowpass filter with cutoff $\Omega_s/2$ and gain $T_s$:</p>
+            $$X(j\Omega) = T_s \cdot X_s(j\Omega) \cdot H_{\text{LP}}(j\Omega), \quad H_{\text{LP}}(j\Omega) = \begin{cases} 1, & |\Omega| \le \Omega_s/2 \\ 0, & \text{otherwise} \end{cases}$$
+
+            <p>The reconstruction formula in the time domain is the <strong>sinc interpolation</strong>:</p>
+            <div class="equation-box">
+              <span class="eq-label">Sinc Reconstruction</span>
+              $$x(t) = \sum_{n=-\infty}^{\infty} x[n] \cdot \operatorname{sinc}\!\left(\frac{t - nT_s}{T_s}\right)$$
+              <span class="eq-number">(1.2)</span>
+            </div>
+
+            <div class="derivation">
+              <div class="derivation-step">
+                <span class="step-label">Derivation</span>
+                <p>Taking the inverse Fourier transform of $X(j\Omega) = T_s X_s(j\Omega) H_{\text{LP}}(j\Omega)$ and noting that the time-domain equivalent of the ideal LPF is a sinc function: $h_{\text{LP}}(t) = \operatorname{sinc}(t/T_s)$, the convolution yields the sinc interpolation formula directly.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <!-- § 1.3 -->
+        <div class="accordion" data-objective="2">
+          <div class="accordion-header">
+            <span class="accordion-arrow">▶</span>
+            <h3>§ 1.3 Aliasing</h3>
+            <span class="accordion-summary">Spectral overlap, aliased frequency formula, anti-aliasing filters</span>
+          </div>
+          <div class="accordion-body"><div class="accordion-content">
+            <p>When $\Omega_s < 2\Omega_{\max}$, the shifted spectral copies overlap — this is <strong>aliasing</strong>. The overlapped components are indistinguishable from lower-frequency content, causing permanent distortion that no post-processing can remove.</p>
+
+            <div class="equation-box">
+              <span class="eq-label">Aliased Frequency</span>
+              $$f_{\text{alias}} = \left|f_{\text{sig}} - \operatorname{round}\!\left(\frac{f_{\text{sig}}}{f_s}\right) \cdot f_s\right|$$
+            </div>
+
+            <p>An <strong>anti-aliasing filter</strong> is a lowpass filter placed before the sampler. It must satisfy:</p>
+            <ul>
+              <li>Passband: $|H(j\Omega)| \approx 1$ for $|\Omega| \le 2\pi f_{\max}$</li>
+              <li>Stopband: $|H(j\Omega)| \approx 0$ for $|\Omega| \ge \pi f_s$ (i.e., $f_s/2$)</li>
+            </ul>
+
+            <p><strong>Practical examples:</strong></p>
+            <ul>
+              <li><strong>Audio CD:</strong> $f_s = 44.1$ kHz, $f_{\max} = 20$ kHz, ratio $= 2.205\times$</li>
+              <li><strong>Telephone:</strong> $f_s = 8$ kHz, $f_{\max} = 3.4$ kHz, ratio $= 2.35\times$</li>
+              <li><strong>Stroboscopic effect:</strong> Wagon wheels appearing to spin backward when the frame rate aliases the spoke frequency</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <!-- § 1.4 -->
+        <div class="accordion" data-objective="3">
+          <div class="accordion-header">
+            <span class="accordion-arrow">▶</span>
+            <h3>§ 1.4 Quantization</h3>
+            <span class="accordion-summary">Uniform quantization, SQNR, dithering</span>
+          </div>
+          <div class="accordion-body"><div class="accordion-content">
+            <p>After sampling, each sample value must be represented with a finite number of bits $B$. <strong>Uniform quantization</strong> divides the input range $[x_{\min}, x_{\max}]$ into $2^B$ equal intervals of width:</p>
+            <div class="equation-box">
+              <span class="eq-label">Step Size</span>
+              $$\Delta = \frac{x_{\max} - x_{\min}}{2^B}$$
+            </div>
+
+            <p>The quantization error $e[n] = x[n] - \hat{x}[n]$ is bounded by $|e[n]| \le \Delta/2$. Under the assumption that $e[n]$ is uniformly distributed, white, and uncorrelated with the signal:</p>
+            <div class="equation-box">
+              <span class="eq-label">SQNR</span>
+              $$\text{SQNR} \approx 6.02B + 1.76 \text{ dB}$$
+              <span class="eq-number">(1.4)</span>
+            </div>
+
+            <div class="derivation">
+              <div class="derivation-step">
+                <span class="step-label">Derivation</span>
+                <p>For a full-scale sinusoid, signal power $= A^2/2$ where $A = 2^{B-1}\Delta$. Noise power of uniform distribution on $[-\Delta/2, \Delta/2]$ is $\sigma_e^2 = \Delta^2/12$. Thus $\text{SQNR} = 10\log_{10}(A^2/2 \cdot 12/\Delta^2) = 10\log_{10}(3 \cdot 2^{2B}/2) = 6.02B + 1.76$ dB.</p>
+              </div>
+            </div>
+
+            <p><strong>Dithering</strong> adds a small amount of white noise (typically $\pm\Delta/2$) before quantization. This randomizes the quantization error, converting harmonic distortion into broadband noise — which is perceptually less objectionable.</p>
+          </div></div>
+        </div>
+
+        <!-- § 1.5 -->
+        <div class="accordion" data-objective="4">
+          <div class="accordion-header">
+            <span class="accordion-arrow">▶</span>
+            <h3>§ 1.5 Reconstruction</h3>
+            <span class="accordion-summary">Ideal LPF, zero-order hold, aperture effect</span>
+          </div>
+          <div class="accordion-body"><div class="accordion-content">
+            <p><strong>Ideal reconstruction</strong> uses multiplication by $T_s$ followed by an ideal lowpass filter with cutoff $\Omega_s/2$ and gain $T_s$. This is equivalent to sinc interpolation — but physically unrealizable since sinc is non-causal and infinite.</p>
+
+            <p><strong>Zero-Order Hold (ZOH)</strong> is the simplest practical D/A converter. Each sample is held constant for one sample period:</p>
+            $$x_{\text{ZOH}}(t) = \sum_n x[n] \cdot \operatorname{rect}\!\left(\frac{t - nT_s - T_s/2}{T_s}\right)$$
+
+            <p>The ZOH frequency response introduces the <strong>aperture effect</strong>:</p>
+            <div class="equation-box">
+              <span class="eq-label">ZOH Transfer Function</span>
+              $$H_{\text{ZOH}}(j\Omega) = T_s \cdot \operatorname{sinc}\!\left(\frac{\Omega T_s}{2\pi}\right) \cdot e^{-j\Omega T_s/2}$$
+            </div>
+
+            <p>The sinc envelope causes high-frequency attenuation (droop) that must be compensated. A <strong>first-order hold</strong> uses linear interpolation between samples, producing a triangular pulse shape with transfer function $H_{\text{FOH}} \propto \operatorname{sinc}^2(\Omega T_s / 2\pi)$.</p>
+          </div></div>
+        </div>
+
+        <!-- ═══ SIMULATIONS ═══ -->
+        <div class="section-header"><h2>Interactive Simulations</h2></div>
+
+        <!-- SIM 1.1: Real-Time Sampling Oscilloscope -->
+        <div class="sim-container fade-in-up">
+          <div class="sim-header">
+            <h3>SIM 1.1 — Real-Time Sampling Oscilloscope</h3>
+            <span class="info-icon" title="Observe how sampling rate affects signal reconstruction. Green = original, cyan = samples, violet = reconstructed.">i</span>
+          </div>
+          <div class="sim-body">
+            <div class="sim-controls">
+              <div class="control-group">
+                <label>Signal Frequency <span class="value-display" id="sigFreqVal">3.0 Hz</span></label>
+                <input type="range" id="sigFreqSlider" min="0.5" max="20" step="0.1" value="3" aria-label="Signal frequency in Hz">
+              </div>
+              <div class="control-group">
+                <label>Signal Type</label>
+                <select id="sigTypeSelect" aria-label="Signal waveform type">
+                  <option value="sine">Sine</option>
+                  <option value="square">Square</option>
+                  <option value="triangle">Triangle</option>
+                  <option value="chirp">Chirp</option>
+                </select>
+              </div>
+              <div class="control-group">
+                <label>Sampling Frequency <span class="value-display" id="sampFreqVal">20 Hz</span></label>
+                <input type="range" id="sampFreqSlider" min="1" max="100" step="1" value="20" aria-label="Sampling frequency in Hz">
+              </div>
+              <div class="control-group">
+                <label>Show Aliased Frequency</label>
+                <div class="toggle-wrap">
+                  <div class="toggle active" id="aliasToggle" role="switch" aria-checked="true" aria-label="Toggle aliased frequency display" tabindex="0"></div>
+                  <span style="font-size:0.8rem;color:var(--text-dim)">On</span>
+                </div>
+              </div>
+            </div>
+            <div class="sim-canvas-wrap canvas-interactive">
+              <canvas id="samplerCanvas" aria-label="Sampling oscilloscope showing continuous signal, sample points, and reconstructed signal"></canvas>
+              <div class="scanline-overlay"></div>
+            </div>
+          </div>
+          <div class="sim-output">
+            <div class="metric"><span class="metric-label">Nyquist Criterion:</span> <span id="nyquistStatus" class="metric-value metric-pass">✓ MET</span></div>
+            <div class="metric"><span class="metric-label">Aliased Freq:</span> <span id="aliasFreqVal" class="metric-value">3.00 Hz</span></div>
+            <div class="metric"><span class="metric-label">fs/fmax:</span> <span id="sampRatioVal" class="metric-value">6.67×</span></div>
+          </div>
+          <div class="sim-buttons">
+            <button class="btn btn-sm btn-primary" id="samplerPlay" aria-label="Play or pause simulation">⏸ Pause</button>
+            <button class="btn btn-sm btn-ghost" id="samplerReset" aria-label="Reset simulation">↺ Reset</button>
+          </div>
+        </div>
+
+        <!-- SIM 1.2: Aliasing Frequency Explorer -->
+        <div class="sim-container fade-in-up">
+          <div class="sim-header">
+            <h3>SIM 1.2 — Aliasing Frequency Explorer</h3>
+            <span class="info-icon" title="Visualize spectral replicas. When replicas overlap the reconstruction window (blue region), aliasing occurs (shown in red).">i</span>
+          </div>
+          <div class="sim-body">
+            <div class="sim-controls">
+              <div class="control-group">
+                <label>Sampling Freq fs <span class="value-display" id="aliasFsVal">50 Hz</span></label>
+                <input type="range" id="aliasFsSlider" min="10" max="100" step="1" value="50" aria-label="Sampling frequency">
+              </div>
+              <div class="control-group">
+                <label>Tone 1 <span class="value-display" id="toneFreqVal0">10 Hz</span></label>
+                <input type="range" id="toneFreq0" min="1" max="50" step="1" value="10" aria-label="Tone 1 frequency">
+                <input type="range" id="toneAmp0" min="0" max="1" step="0.1" value="1" aria-label="Tone 1 amplitude" style="margin-top:4px">
+              </div>
+              <div class="control-group">
+                <label>Tone 2 <span class="value-display" id="toneFreqVal1">22 Hz</span></label>
+                <input type="range" id="toneFreq1" min="1" max="50" step="1" value="22" aria-label="Tone 2 frequency">
+                <input type="range" id="toneAmp1" min="0" max="1" step="0.1" value="0.7" aria-label="Tone 2 amplitude" style="margin-top:4px">
+              </div>
+              <div class="control-group">
+                <label>Tone 3 <span class="value-display" id="toneFreqVal2">35 Hz</span></label>
+                <input type="range" id="toneFreq2" min="1" max="50" step="1" value="35" aria-label="Tone 3 frequency">
+                <input type="range" id="toneAmp2" min="0" max="1" step="0.1" value="0.5" aria-label="Tone 3 amplitude" style="margin-top:4px">
+              </div>
+            </div>
+            <div class="sim-canvas-wrap canvas-interactive">
+              <canvas id="aliasingCanvas" aria-label="Frequency domain display showing original tones and their sampled spectral replicas"></canvas>
+              <div class="scanline-overlay"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SIM 1.3: Quantization Noise Lab -->
+        <div class="sim-container fade-in-up">
+          <div class="sim-header">
+            <h3>SIM 1.3 — Quantization Noise Lab</h3>
+            <span class="info-icon" title="Explore how bit depth affects quantization. Low bit depths produce visible staircase distortion. Dithering randomizes the error.">i</span>
+          </div>
+          <div class="sim-body">
+            <div class="sim-controls">
+              <div class="control-group">
+                <label>Bit Depth <span class="value-display" id="bitDepthVal">8 bits</span></label>
+                <input type="range" id="bitDepthSlider" min="1" max="16" step="1" value="8" aria-label="Quantization bit depth">
+              </div>
+              <div class="control-group">
+                <label>Signal Type</label>
+                <select id="quantSigType" aria-label="Signal type for quantization demo">
+                  <option value="sine">Sine</option>
+                  <option value="sawtooth">Sawtooth</option>
+                  <option value="random">Random</option>
+                </select>
+              </div>
+              <div class="control-group">
+                <label>Dithering</label>
+                <div class="toggle-wrap">
+                  <div class="toggle" id="ditherToggle" role="switch" aria-checked="false" aria-label="Toggle dithering" tabindex="0"></div>
+                  <span style="font-size:0.8rem;color:var(--text-dim)">Off</span>
+                </div>
+              </div>
+            </div>
+            <div class="sim-canvas-wrap canvas-interactive">
+              <canvas id="quantCanvas" aria-label="Three-panel display showing quantized signal, quantization error, and error distribution histogram"></canvas>
+              <div class="scanline-overlay"></div>
+            </div>
+          </div>
+          <div class="sim-output">
+            <div class="metric"><span class="metric-label">SQNR:</span> <span id="sqnrVal" class="metric-value">49.9 dB (theory: 49.9 dB)</span></div>
+            <div class="metric"><span class="metric-label">Max Error:</span> <span id="maxErrVal" class="metric-value">±0.0039</span></div>
+            <div class="metric"><span class="metric-label">Dynamic Range:</span> <span id="dynRangeVal" class="metric-value">48.2 dB</span></div>
+          </div>
+        </div>
+
+        <!-- ═══ KEY EQUATIONS ═══ -->
+        <div class="section-header"><h2>Key Equations Reference</h2></div>
+        <div class="equation-grid">
+          <div class="equation-card">
+            <div class="equation-card-inner">
+              <div class="equation-card-front">
+                <span class="eq-name">Ideal Sampling</span>
+                <div class="eq-katex">$$x_s(t) = x(t)\sum_n \delta(t-nT_s)$$</div>
+                <p class="eq-desc">Sampling is modeled as multiplication by an impulse train with period $T_s$.</p>
+                <div class="eq-tags"><span class="tag tag-time">Time Domain</span></div>
+              </div>
+              <div class="equation-card-back">
+                <p><strong>Derivation:</strong> The ideal sampler extracts signal values at integer multiples of $T_s$. The delta function property $x(t)\delta(t-t_0) = x(t_0)\delta(t-t_0)$ ensures each impulse carries the signal amplitude at that instant.</p>
+              </div>
+            </div>
+          </div>
+          <div class="equation-card">
+            <div class="equation-card-inner">
+              <div class="equation-card-front">
+                <span class="eq-name">Nyquist-Shannon Theorem</span>
+                <div class="eq-katex">$$f_s > 2f_{\max}$$</div>
+                <p class="eq-desc">Perfect reconstruction requires sampling above twice the maximum frequency.</p>
+                <div class="eq-tags"><span class="tag tag-freq">Frequency Domain</span><span class="tag tag-design">Design</span></div>
+              </div>
+              <div class="equation-card-back">
+                <p><strong>Derivation:</strong> Sampling replicates the spectrum at multiples of $f_s$. When $f_s > 2f_{\max}$, replicas don't overlap and the original spectrum is recoverable via ideal lowpass filtering.</p>
+              </div>
+            </div>
+          </div>
+          <div class="equation-card">
+            <div class="equation-card-inner">
+              <div class="equation-card-front">
+                <span class="eq-name">Sinc Interpolation</span>
+                <div class="eq-katex">$$x(t) = \sum_n x[n]\,\mathrm{sinc}\!\left(\frac{t-nT_s}{T_s}\right)$$</div>
+                <p class="eq-desc">Exact reconstruction by weighting each sample with a shifted sinc function.</p>
+                <div class="eq-tags"><span class="tag tag-time">Time Domain</span></div>
+              </div>
+              <div class="equation-card-back">
+                <p><strong>Derivation:</strong> The inverse Fourier transform of the ideal rectangular lowpass filter is the sinc function. The reconstruction is a convolution of the sampled signal with this sinc kernel.</p>
+              </div>
+            </div>
+          </div>
+          <div class="equation-card">
+            <div class="equation-card-inner">
+              <div class="equation-card-front">
+                <span class="eq-name">SQNR</span>
+                <div class="eq-katex">$$\text{SQNR} \approx 6.02B + 1.76 \text{ dB}$$</div>
+                <p class="eq-desc">Each additional bit of resolution adds approximately 6 dB of signal-to-noise ratio.</p>
+                <div class="eq-tags"><span class="tag tag-design">Design</span></div>
+              </div>
+              <div class="equation-card-back">
+                <p><strong>Derivation:</strong> For a full-scale sine wave with $B$-bit uniform quantization, signal power is $2^{2B}\Delta^2/8$ and noise power is $\Delta^2/12$, yielding $10\log_{10}(3\cdot 2^{2B}/2)$.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ QUIZ ═══ -->
+        <div class="section-header"><h2>Chapter Quiz</h2></div>
+        <div class="quiz-card" data-correct="1">
+          <p class="quiz-question">1. A 15 kHz signal is sampled at 24 kHz. What is the aliased frequency?</p>
+          <div class="quiz-options">
+            <div class="quiz-option">15 kHz (no aliasing)</div>
+            <div class="quiz-option">9 kHz</div>
+            <div class="quiz-option">6 kHz</div>
+            <div class="quiz-option">3 kHz</div>
+          </div>
+          <div class="quiz-explanation">The Nyquist rate is 30 kHz, but $f_s = 24$ kHz < 30 kHz, so aliasing occurs. $f_{\text{alias}} = |15 - \text{round}(15/24)\cdot 24| = |15 - 24| = 9$ kHz. The 15 kHz tone appears as a 9 kHz component.</div>
+        </div>
+        <div class="quiz-card" data-correct="2">
+          <p class="quiz-question">2. How many quantization levels are available with 10-bit resolution?</p>
+          <div class="quiz-options">
+            <div class="quiz-option">100</div>
+            <div class="quiz-option">512</div>
+            <div class="quiz-option">1024</div>
+            <div class="quiz-option">2048</div>
+          </div>
+          <div class="quiz-explanation">With $B$ bits, there are $2^B = 2^{10} = 1024$ quantization levels. SQNR ≈ 6.02(10) + 1.76 = 61.96 dB.</div>
+        </div>
+        <div class="quiz-card" data-correct="0">
+          <p class="quiz-question">3. What is the primary purpose of an anti-aliasing filter?</p>
+          <div class="quiz-options">
+            <div class="quiz-option">Remove frequency components above $f_s/2$ before sampling</div>
+            <div class="quiz-option">Boost low-frequency components after reconstruction</div>
+            <div class="quiz-option">Reduce quantization noise in the passband</div>
+            <div class="quiz-option">Compensate for zero-order hold droop</div>
+          </div>
+          <div class="quiz-explanation">An anti-aliasing filter is a lowpass filter applied before sampling that eliminates frequency components above the Nyquist frequency $f_s/2$. Without it, those components alias into the baseband and cannot be separated from the desired signal.</div>
+        </div>
+
+        <!-- ═══ NEXT CHAPTER ═══ -->
+        <a href="../02-discrete-signals-lti/index.html" class="next-chapter-card">
+          <div class="preview" style="display:flex;align-items:center;justify-content:center;color:var(--text-dim)">Ch 2</div>
+          <div class="info">
+            <span class="label">Next Chapter</span>
+            <h3 class="title">Discrete-Time Signals & LTI Systems</h3>
+            <p class="desc">Elementary signals, convolution, system properties, and difference equations.</p>
+          </div>
+          <span class="arrow">→</span>
+        </a>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../../assets/js/dsp-core.js"></script>
+  <script src="../../assets/js/plot-utils.js"></script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/katex-render.js"></script>
+  <script src="sim/sampler.js"></script>
+  <script src="sim/aliasing.js"></script>
+  <script src="sim/reconstruction.js"></script>
+
+  <!-- Hero animation -->
+  <script>
+  (function(){
+    var c = document.getElementById('heroCanvas');
+    if(!c) return;
+    var cx = c.getContext('2d'), t = 0;
+    function resize(){ c.width = c.parentElement.offsetWidth; c.height = c.parentElement.offsetHeight; }
+    resize(); window.addEventListener('resize', resize);
+    function draw(){
+      var w = c.width, h = c.height;
+      cx.fillStyle = '#060b18'; cx.fillRect(0,0,w,h);
+      var amp = h * 0.25, mid = h * 0.5;
+      // Continuous sinusoid (green)
+      cx.strokeStyle = '#69ff47'; cx.lineWidth = 2; cx.shadowColor = '#69ff47'; cx.shadowBlur = 4;
+      cx.beginPath();
+      for(var i=0;i<w;i++){
+        var freq = 3, val = Math.sin(2*Math.PI*freq*(i/w*2 - t*0.3));
+        var y = mid + val * amp;
+        if(i===0) cx.moveTo(i,y); else cx.lineTo(i,y);
+      }
+      cx.stroke(); cx.shadowBlur = 0;
+      // Sample lines
+      var phase = Math.floor(t * 2) % 3;
+      var sampRate = phase === 0 ? 0.08 : (phase === 1 ? 0.167 : 0.25);
+      cx.strokeStyle = '#00e5ff'; cx.lineWidth = 1.5;
+      for(var s=0; s<w; s += w*sampRate){
+        var sx = s + ((t*30)%( w*sampRate));
+        if(sx > w) continue;
+        var sv = Math.sin(2*Math.PI*3*(sx/w*2 - t*0.3));
+        cx.beginPath(); cx.moveTo(sx, mid); cx.lineTo(sx, mid + sv*amp); cx.stroke();
+        cx.fillStyle = '#00e5ff'; cx.beginPath(); cx.arc(sx, mid+sv*amp, 3, 0, 2*Math.PI); cx.fill();
+      }
+      t += 1/60;
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+  </script>
+</body>
+</html>

@@ -1,284 +1,312 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Ch 3 — The Z-Transform</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
   <link rel="stylesheet" href="../../assets/css/main.css" />
   <link rel="stylesheet" href="../../assets/css/math.css" />
   <link rel="stylesheet" href="../../assets/css/animations.css" />
+  <link rel="stylesheet" href="../../assets/css/components.css" />
 </head>
 <body>
-<nav class="sidebar" id="sidebar">
-  <div class="sidebar-header"><a href="../../index.html" class="sidebar-logo">DSP<span class="accent">book</span></a></div>
-  <ul class="sidebar-tree" id="sidebarTree"></ul>
-</nav>
-
-<main class="content" id="mainContent">
-<!-- ═══ HERO ═══ -->
-<section class="chapter-hero">
-  <canvas id="heroCanvas"></canvas>
-  <div class="hero-overlay">
-    <span class="hero-chip">Chapter 3</span>
-    <h1>The Z-Transform</h1>
-    <p class="hero-sub">Map discrete sequences to the complex z-plane and unlock algebraic tools for system analysis.</p>
-  </div>
-</section>
-
-<!-- ═══ LEARNING OBJECTIVES ═══ -->
-<section class="section" id="objectives">
-  <h2>Learning Objectives</h2>
-  <ul class="objectives-list">
-    <li class="objective-item"><input type="checkbox" id="obj1"/><label for="obj1">Define the bilateral and unilateral Z-transform and state the region of convergence (ROC).</label></li>
-    <li class="objective-item"><input type="checkbox" id="obj2"/><label for="obj2">Compute Z-transforms of elementary sequences ($a^n u[n]$, $\delta[n]$, etc.).</label></li>
-    <li class="objective-item"><input type="checkbox" id="obj3"/><label for="obj3">Apply Z-transform properties: linearity, time shift, convolution, differentiation.</label></li>
-    <li class="objective-item"><input type="checkbox" id="obj4"/><label for="obj4">Interpret poles, zeros, and ROC on the z-plane and relate to stability/causality.</label></li>
-    <li class="objective-item"><input type="checkbox" id="obj5"/><label for="obj5">Perform inverse Z-transform via partial fractions and long division.</label></li>
-  </ul>
-</section>
-
-<!-- ═══ THEORY ═══ -->
-<section class="section" id="theory">
-  <h2>Theory</h2>
-
-  <div class="accordion" id="sec3-1">
-    <button class="accordion-btn" aria-expanded="false">§3.1 Definition &amp; Region of Convergence</button>
-    <div class="accordion-body">
-      <p>The <strong>bilateral Z-transform</strong> of $x[n]$ is:</p>
-      <div class="equation-box">$$X(z)=\sum_{n=-\infty}^{\infty}x[n]\,z^{-n}$$</div>
-      <p>where $z=re^{j\omega}$ is a complex variable. The <strong>region of convergence (ROC)</strong> is the set of $z$ values for which the sum converges absolutely:</p>
-      <div class="equation-box">$$\text{ROC}: \{z : \sum_{n=-\infty}^{\infty}|x[n]|\,|z|^{-n}<\infty\}$$</div>
-      <p>The ROC is always an annular region $R_1<|z|<R_2$ (possibly extending to 0 or ∞). <strong>Key facts:</strong></p>
-      <ul>
-        <li>The ROC never contains poles of $X(z)$.</li>
-        <li>For a <strong>right-sided</strong> (causal) signal: ROC extends outward from the outermost pole.</li>
-        <li>For a <strong>left-sided</strong> (anti-causal) signal: ROC extends inward from the innermost pole.</li>
-        <li>For a <strong>two-sided</strong> signal: ROC is a ring between two pole radii.</li>
-      </ul>
-      <p><strong>Unilateral Z-transform:</strong> restricts summation to $n\ge0$, useful for solving difference equations with initial conditions.</p>
-    </div>
-  </div>
-
-  <div class="accordion" id="sec3-2">
-    <button class="accordion-btn" aria-expanded="false">§3.2 Common Z-Transform Pairs</button>
-    <div class="accordion-body">
-      <p>Fundamental pairs every DSP engineer should memorize:</p>
-      <div class="equation-box">$$\delta[n] \;\longleftrightarrow\; 1 \quad\text{(ROC: all } z\text{)}$$</div>
-      <div class="equation-box">$$a^n u[n] \;\longleftrightarrow\; \frac{1}{1-az^{-1}} \quad\text{(ROC: }|z|>|a|\text{)}$$</div>
-      <div class="equation-box">$$n\,a^n u[n] \;\longleftrightarrow\; \frac{az^{-1}}{(1-az^{-1})^2} \quad\text{(ROC: }|z|>|a|\text{)}$$</div>
-      <div class="equation-box">$$u[n] \;\longleftrightarrow\; \frac{1}{1-z^{-1}} \quad\text{(ROC: }|z|>1\text{)}$$</div>
-      <p>For a <strong>damped sinusoid</strong> $r^n\cos(\omega_0 n)u[n]$:</p>
-      <div class="equation-box">$$\frac{1-r\cos(\omega_0)z^{-1}}{1-2r\cos(\omega_0)z^{-1}+r^2z^{-2}}$$</div>
-    </div>
-  </div>
-
-  <div class="accordion" id="sec3-3">
-    <button class="accordion-btn" aria-expanded="false">§3.3 Properties of the Z-Transform</button>
-    <div class="accordion-body">
-      <p><strong>Linearity:</strong> $ax_1[n]+bx_2[n] \;\longleftrightarrow\; aX_1(z)+bX_2(z)$</p>
-      <p><strong>Time shifting:</strong> $x[n-n_0] \;\longleftrightarrow\; z^{-n_0}X(z)$ (ROC unchanged except possibly $z=0$ or $z=\infty$)</p>
-      <p><strong>Convolution:</strong> $x_1[n]*x_2[n] \;\longleftrightarrow\; X_1(z)\cdot X_2(z)$ (ROC ⊇ intersection of individual ROCs)</p>
-      <p><strong>Differentiation in z:</strong> $n\cdot x[n] \;\longleftrightarrow\; -z\frac{dX(z)}{dz}$</p>
-      <p><strong>Initial value theorem:</strong> $x[0]=\lim_{z\to\infty}X(z)$ (for causal signals)</p>
-      <p><strong>Final value theorem:</strong> $\lim_{n\to\infty}x[n]=\lim_{z\to1}(1-z^{-1})X(z)$ (if the limit exists)</p>
-    </div>
-  </div>
-
-  <div class="accordion" id="sec3-4">
-    <button class="accordion-btn" aria-expanded="false">§3.4 Transfer Function &amp; System Analysis</button>
-    <div class="accordion-body">
-      <p>For an LTI system described by $\sum_{k=0}^{N}a_k y[n-k]=\sum_{k=0}^{M}b_k x[n-k]$, taking the Z-transform yields:</p>
-      <div class="equation-box">$$H(z)=\frac{Y(z)}{X(z)}=\frac{\sum_{k=0}^{M}b_k z^{-k}}{\sum_{k=0}^{N}a_k z^{-k}}=\frac{b_0\prod_{k=1}^{M}(1-c_k z^{-1})}{a_0\prod_{k=1}^{N}(1-d_k z^{-1})}$$</div>
-      <p>where $c_k$ are zeros and $d_k$ are poles. Key relationships:</p>
-      <ul>
-        <li><strong>Stability:</strong> System is BIBO stable iff the ROC includes the unit circle $|z|=1$; for causal systems this requires all poles inside the unit circle.</li>
-        <li><strong>Frequency response:</strong> $H(e^{j\omega})=H(z)|_{z=e^{j\omega}}$ — evaluate $H(z)$ on the unit circle.</li>
-        <li>Poles near the unit circle cause peaks in $|H(e^{j\omega})|$; zeros cause notches.</li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="accordion" id="sec3-5">
-    <button class="accordion-btn" aria-expanded="false">§3.5 Inverse Z-Transform Methods</button>
-    <div class="accordion-body">
-      <p>Three principal methods for computing $x[n]=\mathcal{Z}^{-1}\{X(z)\}$:</p>
-      <p><strong>1. Partial Fraction Expansion:</strong> Decompose $X(z)$ into simple fractions and use known Z-transform pairs:</p>
-      <div class="equation-box">$$X(z)=\sum_{k=1}^{N}\frac{A_k}{1-d_k z^{-1}} \;\;\Rightarrow\;\; x[n]=\sum_{k=1}^{N}A_k\,d_k^n\,u[n]$$</div>
-      <p>(for the causal ROC). For anti-causal ROC, each term becomes $-A_k\,d_k^n\,u[-n-1]$.</p>
-      <p><strong>2. Long Division:</strong> Divide numerator by denominator to obtain coefficients of $z^{-n}$ directly: $X(z)=x[0]+x[1]z^{-1}+x[2]z^{-2}+\cdots$</p>
-      <p><strong>3. Contour Integration:</strong> $x[n]=\frac{1}{2\pi j}\oint X(z)z^{n-1}dz$ — typically evaluated via the residue theorem.</p>
-    </div>
-  </div>
-</section>
-
-<!-- ═══ SIMULATIONS ═══ -->
-<section class="section" id="simulations">
-  <h2>Interactive Simulations</h2>
-
-  <!-- SIM 3.1 -->
-  <div class="sim-container" id="sim-pz">
-    <div class="sim-header">
-      <span class="sim-chip">SIM 3.1</span>
-      <h3>Pole-Zero Plot &amp; Frequency Response</h3>
-    </div>
-    <div class="sim-layout">
-      <div class="sim-canvas-wrap">
-        <canvas id="pzCanvas"></canvas>
-        <div class="scanline-overlay"></div>
+  <button class="sidebar-toggle" aria-label="Toggle sidebar">☰</button>
+  <div class="app-layout">
+    <nav class="sidebar" aria-label="Chapter navigation">
+      <div class="sidebar-header">
+        <h2>The Z-Transform</h2>
+        <p class="subtitle">Chapter 3</p>
       </div>
-      <div class="sim-controls">
-        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
-          <button id="pzAddPole" class="btn btn-sm">+ Pole Pair</button>
-          <button id="pzAddZero" class="btn btn-sm">+ Zero Pair</button>
-          <button id="pzConjugate" class="btn btn-sm">⟨Conjugate⟩</button>
-          <button id="pzReset" class="btn btn-sm">↺ Reset</button>
+      <div class="sidebar-nav"></div>
+    </nav>
+
+    <main class="main-content">
+      <div class="content-wrapper">
+
+        <!-- ═══ HERO ═══ -->
+        <div class="chapter-hero">
+          <canvas id="heroCanvas"></canvas>
+          <div class="scanline-overlay"></div>
+          <div class="hero-content">
+            <span class="pill chapter-pill">Chapter 3</span>
+            <h1>The Z-Transform</h1>
+            <p class="hero-sub">Map discrete sequences to the complex z-plane and unlock algebraic tools for system analysis.</p>
+          </div>
         </div>
-        <div id="pzInfo" style="color:var(--text-muted);font-size:0.85rem;line-height:1.6;padding-top:0.5rem;"></div>
-        <p style="font-size:0.8rem;color:var(--text-dim);">Drag poles (×) and zeros (○) on the z-plane.</p>
+
+        <!-- ═══ LEARNING OBJECTIVES ═══ -->
+        <div class="glass-card fade-in-up">
+          <h2>Learning Objectives</h2>
+          <ul class="objectives-list">
+            <li><span class="checkbox"></span>Define the bilateral and unilateral Z-transform and state the region of convergence (ROC).</li>
+            <li><span class="checkbox"></span>Compute Z-transforms of elementary sequences ($a^n u[n]$, $\delta[n]$, etc.).</li>
+            <li><span class="checkbox"></span>Apply Z-transform properties: linearity, time shift, convolution, differentiation.</li>
+            <li><span class="checkbox"></span>Interpret poles, zeros, and ROC on the z-plane and relate to stability/causality.</li>
+            <li><span class="checkbox"></span>Perform inverse Z-transform via partial fractions and long division.</li>
+          </ul>
+        </div>
+
+        <!-- ═══ THEORY ═══ -->
+        <div class="section-header"><h2>Theory</h2></div>
+
+        <div class="accordion" data-objective="1">
+          <div class="accordion-header">
+            <span class="accordion-arrow">▶</span>
+            <h3>§3.1 Definition &amp; Region of Convergence</h3>
+            <span class="accordion-summary">Bilateral / unilateral Z-transform, ROC rules</span>
+          </div>
+          <div class="accordion-body"><div class="accordion-content">
+            <p>The <strong>bilateral Z-transform</strong> of $x[n]$ is:</p>
+            <div class="equation-box">$$X(z)=\sum_{n=-\infty}^{\infty}x[n]\,z^{-n}$$</div>
+            <p>where $z=re^{j\omega}$ is a complex variable. The <strong>region of convergence (ROC)</strong> is the set of $z$ values for which the sum converges absolutely:</p>
+            <div class="equation-box">$$\text{ROC}: \{z : \sum_{n=-\infty}^{\infty}|x[n]|\,|z|^{-n}<\infty\}$$</div>
+            <p>The ROC is always an annular region $R_1<|z|<R_2$ (possibly extending to 0 or ∞). <strong>Key facts:</strong></p>
+            <ul>
+              <li>The ROC never contains poles of $X(z)$.</li>
+              <li>For a <strong>right-sided</strong> (causal) signal: ROC extends outward from the outermost pole.</li>
+              <li>For a <strong>left-sided</strong> (anti-causal) signal: ROC extends inward from the innermost pole.</li>
+              <li>For a <strong>two-sided</strong> signal: ROC is a ring between two pole radii.</li>
+            </ul>
+            <p><strong>Unilateral Z-transform:</strong> restricts summation to $n\ge0$, useful for solving difference equations with initial conditions.</p>
+          </div></div>
+        </div>
+
+        <div class="accordion" data-objective="2">
+          <div class="accordion-header">
+            <span class="accordion-arrow">▶</span>
+            <h3>§3.2 Common Z-Transform Pairs</h3>
+            <span class="accordion-summary">Key transform pairs for analysis</span>
+          </div>
+          <div class="accordion-body"><div class="accordion-content">
+            <p>Fundamental pairs every DSP engineer should memorize:</p>
+            <div class="equation-box">$$\delta[n] \;\longleftrightarrow\; 1 \quad\text{(ROC: all } z\text{)}$$</div>
+            <div class="equation-box">$$a^n u[n] \;\longleftrightarrow\; \frac{1}{1-az^{-1}} \quad\text{(ROC: }|z|>|a|\text{)}$$</div>
+            <div class="equation-box">$$n\,a^n u[n] \;\longleftrightarrow\; \frac{az^{-1}}{(1-az^{-1})^2} \quad\text{(ROC: }|z|>|a|\text{)}$$</div>
+            <div class="equation-box">$$u[n] \;\longleftrightarrow\; \frac{1}{1-z^{-1}} \quad\text{(ROC: }|z|>1\text{)}$$</div>
+            <p>For a <strong>damped sinusoid</strong> $r^n\cos(\omega_0 n)u[n]$:</p>
+            <div class="equation-box">$$\frac{1-r\cos(\omega_0)z^{-1}}{1-2r\cos(\omega_0)z^{-1}+r^2z^{-2}}$$</div>
+          </div></div>
+        </div>
+
+        <div class="accordion" data-objective="3">
+          <div class="accordion-header">
+            <span class="accordion-arrow">▶</span>
+            <h3>§3.3 Properties of the Z-Transform</h3>
+            <span class="accordion-summary">Linearity, time-shift, convolution, differentiation</span>
+          </div>
+          <div class="accordion-body"><div class="accordion-content">
+            <p><strong>Linearity:</strong> $ax_1[n]+bx_2[n] \;\longleftrightarrow\; aX_1(z)+bX_2(z)$</p>
+            <p><strong>Time shifting:</strong> $x[n-n_0] \;\longleftrightarrow\; z^{-n_0}X(z)$ (ROC unchanged except possibly $z=0$ or $z=\infty$)</p>
+            <p><strong>Convolution:</strong> $x_1[n]*x_2[n] \;\longleftrightarrow\; X_1(z)\cdot X_2(z)$ (ROC ⊇ intersection of individual ROCs)</p>
+            <p><strong>Differentiation in z:</strong> $n\cdot x[n] \;\longleftrightarrow\; -z\frac{dX(z)}{dz}$</p>
+            <p><strong>Initial value theorem:</strong> $x[0]=\lim_{z\to\infty}X(z)$ (for causal signals)</p>
+            <p><strong>Final value theorem:</strong> $\lim_{n\to\infty}x[n]=\lim_{z\to1}(1-z^{-1})X(z)$ (if the limit exists)</p>
+          </div></div>
+        </div>
+
+        <div class="accordion" data-objective="4">
+          <div class="accordion-header">
+            <span class="accordion-arrow">▶</span>
+            <h3>§3.4 Transfer Function &amp; System Analysis</h3>
+            <span class="accordion-summary">Poles, zeros, stability, frequency response</span>
+          </div>
+          <div class="accordion-body"><div class="accordion-content">
+            <p>For an LTI system described by $\sum_{k=0}^{N}a_k y[n-k]=\sum_{k=0}^{M}b_k x[n-k]$, taking the Z-transform yields:</p>
+            <div class="equation-box">$$H(z)=\frac{Y(z)}{X(z)}=\frac{\sum_{k=0}^{M}b_k z^{-k}}{\sum_{k=0}^{N}a_k z^{-k}}=\frac{b_0\prod_{k=1}^{M}(1-c_k z^{-1})}{a_0\prod_{k=1}^{N}(1-d_k z^{-1})}$$</div>
+            <p>where $c_k$ are zeros and $d_k$ are poles. Key relationships:</p>
+            <ul>
+              <li><strong>Stability:</strong> System is BIBO stable iff the ROC includes the unit circle $|z|=1$; for causal systems this requires all poles inside the unit circle.</li>
+              <li><strong>Frequency response:</strong> $H(e^{j\omega})=H(z)|_{z=e^{j\omega}}$ — evaluate $H(z)$ on the unit circle.</li>
+              <li>Poles near the unit circle cause peaks in $|H(e^{j\omega})|$; zeros cause notches.</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="accordion" data-objective="5">
+          <div class="accordion-header">
+            <span class="accordion-arrow">▶</span>
+            <h3>§3.5 Inverse Z-Transform Methods</h3>
+            <span class="accordion-summary">Partial fractions, long division, contour integration</span>
+          </div>
+          <div class="accordion-body"><div class="accordion-content">
+            <p>Three principal methods for computing $x[n]=\mathcal{Z}^{-1}\{X(z)\}$:</p>
+            <p><strong>1. Partial Fraction Expansion:</strong> Decompose $X(z)$ into simple fractions and use known Z-transform pairs:</p>
+            <div class="equation-box">$$X(z)=\sum_{k=1}^{N}\frac{A_k}{1-d_k z^{-1}} \;\;\Rightarrow\;\; x[n]=\sum_{k=1}^{N}A_k\,d_k^n\,u[n]$$</div>
+            <p>(for the causal ROC). For anti-causal ROC, each term becomes $-A_k\,d_k^n\,u[-n-1]$.</p>
+            <p><strong>2. Long Division:</strong> Divide numerator by denominator to obtain coefficients of $z^{-n}$ directly: $X(z)=x[0]+x[1]z^{-1}+x[2]z^{-2}+\cdots$</p>
+            <p><strong>3. Contour Integration:</strong> $x[n]=\frac{1}{2\pi j}\oint X(z)z^{n-1}dz$ — typically evaluated via the residue theorem.</p>
+          </div></div>
+        </div>
+
+        <!-- ═══ SIMULATIONS ═══ -->
+        <div class="section-header"><h2>Interactive Simulations</h2></div>
+
+        <!-- SIM 3.1 -->
+        <div class="sim-container fade-in-up">
+          <div class="sim-header">
+            <h3>SIM 3.1 — Pole-Zero Plot &amp; Frequency Response</h3>
+          </div>
+          <div class="sim-body">
+            <div class="sim-controls">
+              <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                <button id="pzAddPole" class="btn btn-sm">+ Pole Pair</button>
+                <button id="pzAddZero" class="btn btn-sm">+ Zero Pair</button>
+                <button id="pzConjugate" class="btn btn-sm">⟨Conjugate⟩</button>
+                <button id="pzReset" class="btn btn-sm">↺ Reset</button>
+              </div>
+              <div id="pzInfo" style="color:var(--text-muted);font-size:0.85rem;line-height:1.6;padding-top:0.5rem;"></div>
+              <p style="font-size:0.8rem;color:var(--text-dim);">Drag poles (×) and zeros (○) on the z-plane.</p>
+            </div>
+            <div class="sim-canvas-wrap canvas-interactive">
+              <canvas id="pzCanvas"></canvas>
+              <div class="scanline-overlay"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SIM 3.2 -->
+        <div class="sim-container fade-in-up">
+          <div class="sim-header">
+            <h3>SIM 3.2 — Z-Plane Explorer</h3>
+          </div>
+          <div class="sim-body">
+            <div class="sim-controls">
+              <label>B(z) coefficients
+                <input type="text" id="zpB" value="1, -1" style="width:100%;background:var(--surface-primary);color:var(--text-primary);border:1px solid var(--border);padding:0.4rem;border-radius:4px;font-family:'JetBrains Mono';" />
+              </label>
+              <label>A(z) coefficients
+                <input type="text" id="zpA" value="1, -0.5" style="width:100%;background:var(--surface-primary);color:var(--text-primary);border:1px solid var(--border);padding:0.4rem;border-radius:4px;font-family:'JetBrains Mono';" />
+              </label>
+              <p style="font-size:0.8rem;color:var(--text-dim);">Move cursor over the z-plane to probe H(z) at any point.</p>
+            </div>
+            <div class="sim-canvas-wrap canvas-interactive">
+              <canvas id="zplaneCanvas"></canvas>
+              <div class="scanline-overlay"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SIM 3.3 -->
+        <div class="sim-container fade-in-up">
+          <div class="sim-header">
+            <h3>SIM 3.3 — Inverse Z-Transform Visualizer</h3>
+          </div>
+          <div class="sim-body">
+            <div class="sim-controls">
+              <label>B(z) coefficients
+                <input type="text" id="invzB" value="1, 0.5" style="width:100%;background:var(--surface-primary);color:var(--text-primary);border:1px solid var(--border);padding:0.4rem;border-radius:4px;font-family:'JetBrains Mono';" />
+              </label>
+              <label>A(z) coefficients
+                <input type="text" id="invzA" value="1, -1.2, 0.5" style="width:100%;background:var(--surface-primary);color:var(--text-primary);border:1px solid var(--border);padding:0.4rem;border-radius:4px;font-family:'JetBrains Mono';" />
+              </label>
+              <label>ROC
+                <select id="invzROC">
+                  <option value="causal">Causal (|z| &gt; max pole)</option>
+                  <option value="anticausal">Anti-causal (|z| &lt; min pole)</option>
+                </select>
+              </label>
+              <label>Samples N
+                <input type="range" id="invzN" min="10" max="60" value="30" />
+              </label>
+            </div>
+            <div class="sim-canvas-wrap canvas-interactive">
+              <canvas id="invzCanvas"></canvas>
+              <div class="scanline-overlay"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ KEY EQUATIONS ═══ -->
+        <div class="section-header"><h2>Key Equations</h2></div>
+        <div class="equation-grid">
+          <div class="equation-card">
+            <div class="equation-card-inner">
+              <div class="equation-card-front"><h4>Z-Transform Definition</h4><p>$$X(z)=\sum_{n=-\infty}^{\infty}x[n]z^{-n}$$</p></div>
+              <div class="equation-card-back"><p>Maps a discrete sequence to a function of the complex variable $z$. Convergence requires the ROC.</p></div>
+            </div>
+          </div>
+          <div class="equation-card">
+            <div class="equation-card-inner">
+              <div class="equation-card-front"><h4>Transfer Function</h4><p>$$H(z)=\frac{B(z)}{A(z)}=\frac{\sum b_k z^{-k}}{\sum a_k z^{-k}}$$</p></div>
+              <div class="equation-card-back"><p>Ratio of output to input Z-transforms. Poles of $H(z)$ determine stability and natural modes.</p></div>
+            </div>
+          </div>
+          <div class="equation-card">
+            <div class="equation-card-inner">
+              <div class="equation-card-front"><h4>Convolution ↔ Multiplication</h4><p>$$x*h \;\longleftrightarrow\; X(z)H(z)$$</p></div>
+              <div class="equation-card-back"><p>Convolution in time becomes multiplication in the Z-domain — the key payoff of the transform.</p></div>
+            </div>
+          </div>
+          <div class="equation-card">
+            <div class="equation-card-inner">
+              <div class="equation-card-front"><h4>Causal Stability</h4><p>$$\text{All poles } |d_k| < 1$$</p></div>
+              <div class="equation-card-back"><p>For a causal LTI system, BIBO stability requires every pole to lie strictly inside the unit circle.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ QUIZ ═══ -->
+        <div class="section-header"><h2>Chapter Quiz</h2></div>
+        <div class="quiz-card" data-correct="1">
+          <p class="quiz-question">1. The Z-transform of $x[n]=(0.5)^n u[n]$ is $\frac{1}{1-0.5z^{-1}}$. What is the ROC?</p>
+          <div class="quiz-options">
+            <div class="quiz-option">$|z| &lt; 0.5$</div>
+            <div class="quiz-option">$|z| &gt; 0.5$</div>
+            <div class="quiz-option">$|z| = 0.5$</div>
+            <div class="quiz-option">All $z$</div>
+          </div>
+          <div class="quiz-explanation">For a right-sided signal $a^n u[n]$, the ROC is $|z| > |a| = 0.5$.</div>
+        </div>
+        <div class="quiz-card" data-correct="2">
+          <p class="quiz-question">2. A system has poles at $z=0.9e^{\pm j\pi/4}$. The system is:</p>
+          <div class="quiz-options">
+            <div class="quiz-option">Unstable — poles are complex</div>
+            <div class="quiz-option">Marginally stable — poles on unit circle</div>
+            <div class="quiz-option">Stable — $|0.9| &lt; 1$, both poles inside UC</div>
+            <div class="quiz-option">Cannot determine without zeros</div>
+          </div>
+          <div class="quiz-explanation">Both poles have magnitude $|0.9| < 1$, placing them strictly inside the unit circle, so the system is BIBO stable.</div>
+        </div>
+        <div class="quiz-card" data-correct="0">
+          <p class="quiz-question">3. Which Z-transform property converts $x[n-2]$ to:</p>
+          <div class="quiz-options">
+            <div class="quiz-option">$z^{-2}X(z)$ (time-shifting property)</div>
+            <div class="quiz-option">$2X(z)$ (scaling property)</div>
+            <div class="quiz-option">$X(z)/z^2$ (frequency scaling)</div>
+            <div class="quiz-option">$X(z-2)$ (z-domain shifting)</div>
+          </div>
+          <div class="quiz-explanation">The time-shifting property states $x[n-n_0] \longleftrightarrow z^{-n_0}X(z)$, so $x[n-2] \longleftrightarrow z^{-2}X(z)$.</div>
+        </div>
+
+        <!-- ═══ NEXT CHAPTER ═══ -->
+        <a href="../04-frequency-analysis/index.html" class="next-chapter-card">
+          <div class="preview" style="display:flex;align-items:center;justify-content:center;color:var(--text-dim)">Ch 4</div>
+          <div class="info">
+            <span class="label">Next Chapter</span>
+            <h3 class="title">Frequency-Domain Analysis: DTFT, DFT &amp; FFT</h3>
+            <p class="desc">Transform to the frequency domain with DTFT, DFT, and efficient FFT algorithms.</p>
+          </div>
+          <span class="arrow">→</span>
+        </a>
+
       </div>
-    </div>
+    </main>
   </div>
 
-  <!-- SIM 3.2 -->
-  <div class="sim-container" id="sim-zplane">
-    <div class="sim-header">
-      <span class="sim-chip">SIM 3.2</span>
-      <h3>Z-Plane Explorer</h3>
-    </div>
-    <div class="sim-layout">
-      <div class="sim-canvas-wrap">
-        <canvas id="zplaneCanvas"></canvas>
-        <div class="scanline-overlay"></div>
-      </div>
-      <div class="sim-controls">
-        <label>B(z) coefficients
-          <input type="text" id="zpB" value="1, -1" style="width:100%;background:var(--surface-primary);color:var(--text-primary);border:1px solid var(--border);padding:0.4rem;border-radius:4px;font-family:'JetBrains Mono';" />
-        </label>
-        <label>A(z) coefficients
-          <input type="text" id="zpA" value="1, -0.5" style="width:100%;background:var(--surface-primary);color:var(--text-primary);border:1px solid var(--border);padding:0.4rem;border-radius:4px;font-family:'JetBrains Mono';" />
-        </label>
-        <p style="font-size:0.8rem;color:var(--text-dim);">Move cursor over the z-plane to probe H(z) at any point.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- SIM 3.3 -->
-  <div class="sim-container" id="sim-invz">
-    <div class="sim-header">
-      <span class="sim-chip">SIM 3.3</span>
-      <h3>Inverse Z-Transform Visualizer</h3>
-    </div>
-    <div class="sim-layout">
-      <div class="sim-canvas-wrap">
-        <canvas id="invzCanvas"></canvas>
-        <div class="scanline-overlay"></div>
-      </div>
-      <div class="sim-controls">
-        <label>B(z) coefficients
-          <input type="text" id="invzB" value="1, 0.5" style="width:100%;background:var(--surface-primary);color:var(--text-primary);border:1px solid var(--border);padding:0.4rem;border-radius:4px;font-family:'JetBrains Mono';" />
-        </label>
-        <label>A(z) coefficients
-          <input type="text" id="invzA" value="1, -1.2, 0.5" style="width:100%;background:var(--surface-primary);color:var(--text-primary);border:1px solid var(--border);padding:0.4rem;border-radius:4px;font-family:'JetBrains Mono';" />
-        </label>
-        <label>ROC
-          <select id="invzROC">
-            <option value="causal">Causal (|z| &gt; max pole)</option>
-            <option value="anticausal">Anti-causal (|z| &lt; min pole)</option>
-          </select>
-        </label>
-        <label>Samples N
-          <input type="range" id="invzN" min="10" max="60" value="30" />
-        </label>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══ KEY EQUATIONS ═══ -->
-<section class="section" id="equations">
-  <h2>Key Equations</h2>
-  <div class="equation-grid">
-    <div class="equation-card">
-      <div class="equation-card-inner">
-        <div class="equation-card-front"><h4>Z-Transform Definition</h4><p>$$X(z)=\sum_{n=-\infty}^{\infty}x[n]z^{-n}$$</p></div>
-        <div class="equation-card-back"><p>Maps a discrete sequence to a function of the complex variable $z$. Convergence requires the ROC.</p></div>
-      </div>
-    </div>
-    <div class="equation-card">
-      <div class="equation-card-inner">
-        <div class="equation-card-front"><h4>Transfer Function</h4><p>$$H(z)=\frac{B(z)}{A(z)}=\frac{\sum b_k z^{-k}}{\sum a_k z^{-k}}$$</p></div>
-        <div class="equation-card-back"><p>Ratio of output to input Z-transforms. Poles of $H(z)$ determine stability and natural modes.</p></div>
-      </div>
-    </div>
-    <div class="equation-card">
-      <div class="equation-card-inner">
-        <div class="equation-card-front"><h4>Convolution ↔ Multiplication</h4><p>$$x*h \;\longleftrightarrow\; X(z)H(z)$$</p></div>
-        <div class="equation-card-back"><p>Convolution in time becomes multiplication in the Z-domain — the key payoff of the transform.</p></div>
-      </div>
-    </div>
-    <div class="equation-card">
-      <div class="equation-card-inner">
-        <div class="equation-card-front"><h4>Causal Stability</h4><p>$$\text{All poles } |d_k| < 1$$</p></div>
-        <div class="equation-card-back"><p>For a causal LTI system, BIBO stability requires every pole to lie strictly inside the unit circle.</p></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══ QUIZ ═══ -->
-<section class="section" id="quiz">
-  <h2>Check Your Understanding</h2>
-  <div class="quiz-card" data-correct="b">
-    <p class="quiz-q"><strong>Q1.</strong> The Z-transform of $x[n]=(0.5)^n u[n]$ is $\frac{1}{1-0.5z^{-1}}$. What is the ROC?</p>
-    <div class="quiz-options">
-      <button class="quiz-option" data-value="a">$|z| &lt; 0.5$</button>
-      <button class="quiz-option" data-value="b">$|z| &gt; 0.5$</button>
-      <button class="quiz-option" data-value="c">$|z| = 0.5$</button>
-      <button class="quiz-option" data-value="d">All $z$</button>
-    </div>
-  </div>
-  <div class="quiz-card" data-correct="c">
-    <p class="quiz-q"><strong>Q2.</strong> A system has poles at $z=0.9e^{\pm j\pi/4}$. The system is:</p>
-    <div class="quiz-options">
-      <button class="quiz-option" data-value="a">Unstable — poles are complex</button>
-      <button class="quiz-option" data-value="b">Marginally stable — poles on unit circle</button>
-      <button class="quiz-option" data-value="c">Stable — $|0.9| &lt; 1$, both poles inside UC</button>
-      <button class="quiz-option" data-value="d">Cannot determine without zeros</button>
-    </div>
-  </div>
-  <div class="quiz-card" data-correct="a">
-    <p class="quiz-q"><strong>Q3.</strong> Which Z-transform property converts $x[n-2]$ to:</p>
-    <div class="quiz-options">
-      <button class="quiz-option" data-value="a">$z^{-2}X(z)$ (time-shifting property)</button>
-      <button class="quiz-option" data-value="b">$2X(z)$ (scaling property)</button>
-      <button class="quiz-option" data-value="c">$X(z)/z^2$ (frequency scaling)</button>
-      <button class="quiz-option" data-value="d">$X(z-2)$ (z-domain shifting)</button>
-    </div>
-  </div>
-</section>
-
-<!-- ═══ NEXT CHAPTER ═══ -->
-<section class="section" id="next">
-  <a href="../04-frequency-analysis/index.html" class="chapter-next-card">
-    <span class="next-label">Next Chapter →</span>
-    <span class="next-title">Frequency-Domain Analysis: DTFT, DFT &amp; FFT</span>
-  </a>
-</section>
-</main>
-
-<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
-<script src="../../assets/js/theme.js"></script>
-<script src="../../assets/js/plot-utils.js"></script>
-<script src="../../assets/js/dsp-core.js"></script>
-<script src="../../assets/js/nav.js"></script>
-<script src="../../assets/js/katex-render.js"></script>
-<script src="sim/pole-zero-plot.js"></script>
-<script src="sim/z-plane-explorer.js"></script>
-<script src="sim/inverse-z.js"></script>
+  <!-- Scripts -->
+  <script src="../../assets/js/dsp-core.js"></script>
+  <script src="../../assets/js/plot-utils.js"></script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/katex-render.js"></script>
+  <script src="sim/pole-zero-plot.js"></script>
+  <script src="sim/z-plane-explorer.js"></script>
+  <script src="sim/inverse-z.js"></script>
 <script>
 (function(){
   var hc=document.getElementById('heroCanvas');if(!hc)return;

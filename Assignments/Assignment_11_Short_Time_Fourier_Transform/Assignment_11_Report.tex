@@ -3,6 +3,25 @@
 \usepackage{amsmath, amssymb}
 \usepackage{graphicx}
 \usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue}\bfseries,
+    commentstyle=\color{gray}\itshape,
+    stringstyle=\color{orange},
+    numberstyle=\tiny\color{gray},
+    numbers=left,
+    stepnumber=1,
+    numbersep=8pt,
+    frame=single,
+    breaklines=true,
+    breakatwhitespace=false,
+    showstringspaces=false,
+    tabsize=4,
+    captionpos=b
+}
 \usepackage{geometry}
 \geometry{margin=1in}
 
@@ -45,5 +64,48 @@ A secondary evaluation utilizing a short window block ($N_{perseg} = 32$) illust
     \item \textbf{Window 32 (Bottom Plot):} The temporal localization of the frequency transition occurring exactly at 2.5 seconds is visibly sharper with much fewer intermediary blocks. Conversely, the strict frequency bands are now severely smeared vertically along the Y-axis.
     \item \textbf{Projection ($N=256, 512$):} Should an extremely extended window ($N=256$ or $512$) be applied, the frequency resolution would theoretically collapse to practically impulse lines. However, detecting the temporal disruption timestamp would be nearly impossible, smearing transition artifacts across large fractional spans ($> 50\%$) of the recording.
 \end{itemize}
+
+\appendix
+\section{Python Source Code}
+\textbf{File:} \texttt{assignment11\_stft.py}
+\begin{lstlisting}[caption={STFT Spectrogram -- Assignment 11}]
+import numpy as np
+import scipy.signal as signal
+import matplotlib.pyplot as plt
+import os
+
+def run_assignment11():
+    if not os.path.exists('plots'):
+        os.makedirs('plots')
+
+    Fs = 200
+    N = 1000
+    n = np.arange(N)
+    x = np.zeros(N)
+    x[:500] = np.sin(2 * np.pi * 5 * n[:500] / Fs)
+    x[500:] = np.sin(2 * np.pi * 50 * n[500:] / Fs)
+
+    plt.figure(figsize=(10, 8))
+
+    plt.subplot(2, 1, 1)
+    f1, t1, Zxx1 = signal.stft(x, fs=Fs, window='hamming', nperseg=128, noverlap=64)
+    plt.pcolormesh(t1, f1, np.abs(Zxx1), shading='gouraud')
+    plt.title('STFT Spectrogram - Hamming Window 128 (50% Overlap)')
+    plt.ylabel('Frequency (Hz)')
+
+    plt.subplot(2, 1, 2)
+    f2, t2, Zxx2 = signal.stft(x, fs=Fs, window='hamming', nperseg=32, noverlap=16)
+    plt.pcolormesh(t2, f2, np.abs(Zxx2), shading='gouraud')
+    plt.title('STFT Spectrogram - Hamming Window 32 (50% Overlap)')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Frequency (Hz)')
+
+    plt.tight_layout()
+    plt.savefig('plots/spectrograms.png')
+    print("Assignment 11 plot saved.")
+
+if __name__ == '__main__':
+    run_assignment11()
+\end{lstlisting}
 
 \end{document}

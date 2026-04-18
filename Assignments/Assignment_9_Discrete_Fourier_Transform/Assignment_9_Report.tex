@@ -3,6 +3,25 @@
 \usepackage{amsmath, amssymb}
 \usepackage{graphicx}
 \usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue}\bfseries,
+    commentstyle=\color{gray}\itshape,
+    stringstyle=\color{orange},
+    numberstyle=\tiny\color{gray},
+    numbers=left,
+    stepnumber=1,
+    numbersep=8pt,
+    frame=single,
+    breaklines=true,
+    breakatwhitespace=false,
+    showstringspaces=false,
+    tabsize=4,
+    captionpos=b
+}
 \usepackage{geometry}
 \geometry{margin=1in}
 
@@ -92,5 +111,73 @@ To obtain the linear convolution of two sequences using the DFT (which represent
     \caption{Convolution Comparison: Linear vs Circular}
     \label{fig:conv_comp}
 \end{figure}
+
+\appendix
+\section{Python Source Code}
+\textbf{File:} \texttt{assignment9\_dft.py}
+\begin{lstlisting}[caption={DFT Convolution: Linear vs. Circular -- Assignment 9}]
+import numpy as np
+import matplotlib.pyplot as plt
+import os
+
+def run_dft_convolution():
+    if not os.path.exists('plots'):
+        os.makedirs('plots')
+
+    x = np.array([1, 2, 3])
+    h = np.array([1, 1, 1])
+
+    print("--- (a) Linear Convolution ---")
+    y_lin = np.convolve(x, h)
+    print(f"y_lin[n] = {y_lin}")
+
+    print("\n--- (b) 3-Point DFT Circular Convolution ---")
+    N3 = 3
+    X3 = np.fft.fft(x, n=N3)
+    H3 = np.fft.fft(h, n=N3)
+    Y3 = X3 * H3
+    y_circ3 = np.real(np.fft.ifft(Y3)).round(decimals=5)
+    print(f"y_circ3[n] = {y_circ3}")
+
+    print("\n--- (c) 5-Point Zero-Padded DFT ---")
+    N5 = 5
+    X5 = np.fft.fft(x, n=N5)
+    H5 = np.fft.fft(h, n=N5)
+    Y5 = X5 * H5
+    y_circ5 = np.real(np.fft.ifft(Y5)).round(decimals=5)
+    print(f"y_circ5[n] = {y_circ5}")
+
+    plt.figure(figsize=(12, 8))
+    n_lin = np.arange(len(y_lin))
+    n_circ3 = np.arange(len(y_circ3))
+    n_circ5 = np.arange(len(y_circ5))
+
+    plt.subplot(3, 1, 1)
+    plt.stem(n_lin, y_lin)
+    plt.title('Linear Convolution (N=5)')
+    plt.ylabel('Amplitude')
+    plt.grid(True)
+
+    plt.subplot(3, 1, 2)
+    plt.stem(n_circ3, y_circ3)
+    plt.title('Circular Convolution via 3-point DFT (N=3)')
+    plt.ylabel('Amplitude')
+    plt.grid(True)
+
+    plt.subplot(3, 1, 3)
+    plt.stem(n_circ5, y_circ5)
+    plt.title('Circular Convolution via 5-point DFT (N=5) - Matches Linear')
+    plt.xlabel('n')
+    plt.ylabel('Amplitude')
+    plt.grid(True)
+
+    plt.tight_layout()
+    output_path = os.path.join('plots', 'convolution_comparison.png')
+    plt.savefig(output_path)
+    print(f"\nPlot saved to {output_path}")
+
+if __name__ == "__main__":
+    run_dft_convolution()
+\end{lstlisting}
 
 \end{document}

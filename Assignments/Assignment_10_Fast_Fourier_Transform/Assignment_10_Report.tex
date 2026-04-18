@@ -3,6 +3,25 @@
 \usepackage{amsmath, amssymb}
 \usepackage{graphicx}
 \usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue}\bfseries,
+    commentstyle=\color{gray}\itshape,
+    stringstyle=\color{orange},
+    numberstyle=\tiny\color{gray},
+    numbers=left,
+    stepnumber=1,
+    numbersep=8pt,
+    frame=single,
+    breaklines=true,
+    breakatwhitespace=false,
+    showstringspaces=false,
+    tabsize=4,
+    captionpos=b
+}
 \usepackage{geometry}
 \geometry{margin=1in}
 
@@ -74,5 +93,69 @@ In practice, the \textit{measured} Python speed-up factor often drastically exce
     \item \textbf{Cache Coalescing \& SIMD:} The FFT block algorithms make vastly superior use of CPU level-1 & level-2 cache hierarchy and execute instructions using hardware vectorization optimizations.
 \end{enumerate}
 This demonstrates that while complexity theories ($\mathcal{O}(N)$ vs $\mathcal{O}(N^2)$) set the expected mathematical scalability rules, true algorithm analysis incorporates memory boundaries and system architecture to dictate realistic speed upgrades.
+
+\appendix
+\section{Python Source Code}
+\textbf{File:} \texttt{assignment10\_fft\_timing.py}
+\begin{lstlisting}[caption={DFT vs. FFT Timing Benchmark -- Assignment 10}]
+import numpy as np
+import time
+import matplotlib.pyplot as plt
+import os
+
+def naive_dft(x):
+    """Compute DFT of 1D array x using O(N^2) algorithm."""
+    N = len(x)
+    n = np.arange(N)
+    k = n.reshape((N, 1))
+    e = np.exp(-2j * np.pi * k * n / N)
+    return np.dot(e, x)
+
+def run_timing():
+    if not os.path.exists('plots'):
+        os.makedirs('plots')
+
+    N = 512
+    np.random.seed(42)
+    x = np.random.rand(N) + 1j * np.random.rand(N)
+
+    _ = naive_dft(x[:10])
+    start_time = time.perf_counter()
+    X_dft = naive_dft(x)
+    dft_time = time.perf_counter() - start_time
+
+    _ = np.fft.fft(x[:10])
+    start_time = time.perf_counter()
+    X_fft = np.fft.fft(x)
+    fft_time = time.perf_counter() - start_time
+
+    diff = np.max(np.abs(X_dft - X_fft))
+    speed_up = dft_time / fft_time if fft_time > 0 else float('inf')
+    theoretical_ratio = N / np.log2(N)
+
+    print(f"--- Timing Results for N={N} ---")
+    print(f"Naive DFT time: {dft_time*1000:.4f} ms")
+    print(f"NumPy FFT time: {fft_time*1000:.4f} ms")
+    print(f"Max absolute difference: {diff:.2e}")
+    print(f"Measured Speed-up factor (DFT/FFT): {speed_up:.2f}x")
+    print(f"Theoretical Ratio (N/log2(N)): {theoretical_ratio:.2f}")
+
+    plt.figure(figsize=(8, 6))
+    methods = ['Naive DFT', 'NumPy FFT']
+    times = [dft_time * 1000, fft_time * 1000]
+    plt.bar(methods, times, color=['#E24A33', '#348ABD'])
+    plt.ylabel('Execution Time (ms)')
+    plt.yscale('log')
+    plt.title(f'DFT vs FFT Execution Time for N={N} (Log Scale)')
+    for i, v in enumerate(times):
+        plt.text(i, v*1.1, f"{v:.4f} ms", ha='center', fontweight='bold')
+    plt.tight_layout()
+    output_path = os.path.join('plots', 'timing_comparison.png')
+    plt.savefig(output_path)
+    print(f"Plot saved to {output_path}")
+
+if __name__ == '__main__':
+    run_timing()
+\end{lstlisting}
 
 \end{document}

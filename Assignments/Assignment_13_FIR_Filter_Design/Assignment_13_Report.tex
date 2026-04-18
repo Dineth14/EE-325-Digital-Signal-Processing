@@ -3,6 +3,25 @@
 \usepackage{amsmath, amssymb}
 \usepackage{graphicx}
 \usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue}\bfseries,
+    commentstyle=\color{gray}\itshape,
+    stringstyle=\color{orange},
+    numberstyle=\tiny\color{gray},
+    numbers=left,
+    stepnumber=1,
+    numbersep=8pt,
+    frame=single,
+    breaklines=true,
+    breakatwhitespace=false,
+    showstringspaces=false,
+    tabsize=4,
+    captionpos=b
+}
 \usepackage{geometry}
 \geometry{margin=1in}
 
@@ -53,5 +72,71 @@ The mathematical reduction eliminates cross-product sine integrations explicitly
     \item \textbf{Window Configuration (LPF, Hamming N=21):} Provides incredibly smooth passband behavior inherently blocking ripple formation due to the gradual roll-off properties scaling internal limits. The stop band attenuation settles securely below $-50$ dB. The drawback is its wide transition boundary mapping natively to the $4\pi/N$ window lobe limitation.
     \item \textbf{Frequency Sampling Configuration (HPF, N=16):} Enables explicit manipulation bridging the transition, hitting frequency bins explicitly on specific magnitudes mapping tight discrete transition intervals spanning the $0.4\pi$. However, intermediate points generate intense Gibbs phenomenon anomalies resulting in severe oscillatory passband ripple and shallow relative stopband attenuation lacking any explicit magnitude clamping formulas compared to continuous window derivatives.
 \end{itemize}
+
+\appendix
+\section{Python Source Code}
+\textbf{File:} \texttt{assignment13\_fir.py}
+\begin{lstlisting}[caption={FIR Filter Design: Window Method and Frequency Sampling -- Assignment 13}]
+import numpy as np
+import scipy.signal as signal
+import matplotlib.pyplot as plt
+import os
+
+def run_assignment13():
+    if not os.path.exists('plots'):
+        os.makedirs('plots')
+
+    # Low-pass FIR via Hamming window
+    N = 21
+    M = 10
+    wc = 0.4 * np.pi
+    n = np.arange(N)
+
+    hd = np.zeros(N)
+    for i in range(N):
+        if i == M:
+            hd[i] = wc / np.pi
+        else:
+            hd[i] = np.sin(wc * (i - M)) / (np.pi * (i - M))
+
+    w_hamming = 0.54 - 0.46 * np.cos(2 * np.pi * n / (N - 1))
+    hlp = hd * w_hamming
+
+    # High-pass FIR via frequency sampling
+    N_hp = 16
+    Hk = np.zeros(N_hp, dtype=complex)
+    Hk[4:9] = 1.0
+    Hk[9:13] = 1.0
+    hhp = np.real(np.fft.ifft(Hk))
+    hhp_causal = np.fft.fftshift(hhp)
+
+    w_lp, H_lp = signal.freqz(hlp, worN=1000)
+    w_hp, H_hp = signal.freqz(hhp_causal, worN=1000)
+
+    plt.figure(figsize=(10, 8))
+    plt.subplot(2, 1, 1)
+    plt.plot(w_lp / np.pi, 20 * np.log10(np.abs(H_lp) + 1e-12))
+    plt.axvline(0.4, color='r', linestyle='--')
+    plt.title('Low-Pass FIR (Window Method, N=21) Magnitude Response')
+    plt.ylabel('Magnitude (dB)')
+    plt.grid(True)
+    plt.ylim(-100, 10)
+
+    plt.subplot(2, 1, 2)
+    plt.plot(w_hp / np.pi, 20 * np.log10(np.abs(H_hp) + 1e-12))
+    plt.axvline(0.4, color='r', linestyle='--')
+    plt.title('High-Pass FIR (Frequency Sampling, N=16) Magnitude Response')
+    plt.xlabel('Frequency (x pi rad/sample)')
+    plt.ylabel('Magnitude (dB)')
+    plt.ylim(-100, 10)
+    plt.grid(True)
+
+    plt.tight_layout()
+    plt.savefig('plots/fir_comparison.png')
+    print("Assignment 13 plot saved.")
+
+if __name__ == '__main__':
+    run_assignment13()
+\end{lstlisting}
 
 \end{document}

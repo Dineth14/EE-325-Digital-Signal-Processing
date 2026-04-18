@@ -3,6 +3,25 @@
 \usepackage{amsmath, amssymb}
 \usepackage{graphicx}
 \usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue}\bfseries,
+    commentstyle=\color{gray}\itshape,
+    stringstyle=\color{orange},
+    numberstyle=\tiny\color{gray},
+    numbers=left,
+    stepnumber=1,
+    numbersep=8pt,
+    frame=single,
+    breaklines=true,
+    breakatwhitespace=false,
+    showstringspaces=false,
+    tabsize=4,
+    captionpos=b
+}
 \usepackage{geometry}
 \geometry{margin=1in}
 
@@ -80,5 +99,55 @@ $$x[n] = 1.333 \cdot 1^n - 1.333 \cdot (-0.5)^n$$
     \caption{Plot of time-domain sequence $x[n]$}
     \label{fig:xn_plot}
 \end{figure}
+
+\appendix
+\section{Python Source Code}
+\textbf{File:} \texttt{z\_transform\_verification.py}
+\begin{lstlisting}[caption={Z-Transform Verification via Partial Fractions -- Assignment 4}]
+import sympy as sp
+import numpy as np
+import matplotlib.pyplot as plt
+
+def verify_inverse_z_transform():
+    # Define variables
+    z = sp.symbols('z')
+    n = sp.symbols('n', integer=True)
+    
+    # Q2: Inverse z-Transform of X(z) = 2z / ((z - 1)(z + 0.5))
+    X_z_expr = 2 * z / ((z - 1) * (z + 0.5))
+    X_z_div_z = 2 / ((z - 1) * (z + 0.5))
+    
+    print("X(z) =", X_z_expr)
+    print("\n--- Partial Fraction Expansion (Symbolic) ---")
+    
+    PFE_div_z = sp.apart(X_z_div_z, z)
+    print("X(z)/z (Partial Fractions):", PFE_div_z)
+    
+    X_z_reconstructed = PFE_div_z * z
+    print("X(z) (PFE form):", sp.expand(X_z_reconstructed))
+    
+    print("\n--- Inverse z-Transform Derivation ---")
+    x_n_analytical_str = "(4/3) * (1)**n - (4/3) * (-0.5)**n"
+    print(f"Analytical x[n] (derived from PFE): {x_n_analytical_str} for n >= 0")
+    
+    print("\n--- Numerical Verification & Plotting ---")
+    n_vals = np.arange(0, 11)
+    x_n_vals = (4/3) * (1.0)**n_vals - (4/3) * (-0.5)**n_vals
+    
+    print(f"x[0]: {x_n_vals[0]}")
+    print(f"x[1]: {x_n_vals[1]}")
+    
+    plt.figure(figsize=(10, 6))
+    plt.stem(n_vals, x_n_vals, basefmt=" ")
+    plt.title('Plot of x[n] for Assignment 4 Q2')
+    plt.xlabel('n')
+    plt.ylabel('x[n]')
+    plt.grid(True)
+    plt.savefig('x_n_plot.png')
+    print("Plot saved to x_n_plot.png")
+
+if __name__ == "__main__":
+    verify_inverse_z_transform()
+\end{lstlisting}
 
 \end{document}

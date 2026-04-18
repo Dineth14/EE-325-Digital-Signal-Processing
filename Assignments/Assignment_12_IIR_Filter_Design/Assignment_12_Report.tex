@@ -3,6 +3,25 @@
 \usepackage{amsmath, amssymb}
 \usepackage{graphicx}
 \usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue}\bfseries,
+    commentstyle=\color{gray}\itshape,
+    stringstyle=\color{orange},
+    numberstyle=\tiny\color{gray},
+    numbers=left,
+    stepnumber=1,
+    numbersep=8pt,
+    frame=single,
+    breaklines=true,
+    breakatwhitespace=false,
+    showstringspaces=false,
+    tabsize=4,
+    captionpos=b
+}
 \usepackage{geometry}
 \geometry{margin=1in}
 
@@ -59,5 +78,51 @@ Evaluating the analog frequency parameter against derived digital states utilizi
     \item Passband Shape ($\omega \approx 0$): Both the impulse invariance and tracking bilinear transform follow the analytical $|H_a(j\Omega)|$ model cleanly spanning the origin bounds natively tracking 0 dB.
     \item Attenuation / Stopband ($\omega \to \pi$): The Bilinear filter mathematically forces the system cutoff towards the required $z=-1$ Nyquist absolute zero matching perfectly without noise. Impulse Invariance physically fails to reach 0 magnitude at Nyquist because the unbounded continuous spectrum magnitude aliases components above $F_s/2$ downwards into the primary band. 
 \end{itemize}
+
+\appendix
+\section{Python Source Code}
+\textbf{File:} \texttt{assignment12\_iir.py}
+\begin{lstlisting}[caption={IIR Design: Impulse Invariance vs. Bilinear Transform -- Assignment 12}]
+import numpy as np
+import matplotlib.pyplot as plt
+import os
+
+def run_assignment12():
+    if not os.path.exists('plots'):
+        os.makedirs('plots')
+
+    # Analog Filter
+    W = np.linspace(0, 3, 1000)
+    H_a = 1 / (1j * W + 1)
+    mag_Ha = np.abs(H_a)
+
+    # Digital Filters (T=1)
+    w = np.linspace(0, np.pi, 1000)
+
+    # Impulse Invariance
+    H_imp = 1 / (1 - np.exp(-1) * np.exp(-1j * w))
+    mag_Himp = np.abs(H_imp)
+
+    # Bilinear Transform
+    H_bilin = (1 + np.exp(-1j * w)) / (3 - np.exp(-1j * w))
+    mag_Hbilin = np.abs(H_bilin)
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(W, mag_Ha, label='Analog Filter |H_a(jW)|')
+    plt.plot(w, mag_Himp, label='Impulse Invariance |H_imp(e^{jw})|', linestyle='--')
+    plt.plot(w, mag_Hbilin, label='Bilinear Transform |H_bilin(e^{jw})|', linestyle='-.')
+    plt.title('Frequency Response Comparison (Analog vs. Digital)')
+    plt.xlabel('Frequency omega or Omega (rad/s)')
+    plt.ylabel('Magnitude')
+    plt.xlim(0, 3)
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig('plots/filter_comparison.png')
+    print("Assignment 12 plot saved.")
+
+if __name__ == '__main__':
+    run_assignment12()
+\end{lstlisting}
 
 \end{document}

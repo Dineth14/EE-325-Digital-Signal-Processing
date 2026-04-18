@@ -1,31 +1,170 @@
-EE 325 - Digital Signal Processing
-====================================
-Code Verification and Bug Fix Report
-====================================
+EE 325 DSP Verification Report
+Student: E/21/291
+Date: 2026-04-18
 
-The provided Python code for Lab 01 and Lab 02 has been thoroughly reviewed against the mathematical instructions derived from the student parameters E/21/291 (a=2, b=9, c=1). Several deviations from the specifications were identified and corrected.
+Environment Notes
+- `pip install numpy scipy matplotlib --break-system-packages` was executed successfully. All three packages were already installed.
+- `apt-get` is not available in this Windows environment, so the Linux package-install step could not be executed verbatim.
+- All `.py` files in the repository were listed and read before verification work started.
+- Verification targets for the lab tasks were:
+  - `Labs/Lab_01_Frequency_Estimation/lab1_tasks.py`
+  - `Labs/Lab_02_Filter_Design/lab2_filter_design.py`
+- Corrected deliverables were created as:
+  - `lab01_verified.py`
+  - `lab02_verified.py`
 
---- LAB 01 RECTIFICATIONS ---
-1. Step 5 (Autocorrelation): 
-   - Bug Found: The autocorrelation estimator only yielded biased correlations scaled globally by `1/N`. 
-   - Fix Applied (lines 115-121): The Power-Signal approximation formula `r̂_xx[ℓ] = (1/(N-ℓ)) Σ x_N[n+ℓ]x_N[n]` was explicitly appended alongside the default biased calculation for comparative assessment. The fundamental period 1/GCD(12, 39, 71) = 1s was highlighted.
-2. Step 7 (Periodogram):
-   - Bug Found: Periodogram was built using `scipy.signal.periodogram()`, contrary to the instruction demanding implementation exactly via the "DFT of xcorr result".
-   - Fix Applied (lines 146-150): Discarded the built-in function and evaluated `np.abs(np.fft.fft(np.fft.ifftshift(rxx1_biased)))` manually preserving linear scaling (not dB).
-3. Step 8/9 (MUSIC/PHD Decomposition):
-   - Bug Found: Code utilized an arbitrary size `M=15` Auto-Correlation Matrix (ACM) and executed generic MUSIC utilizing the entire sequence of noise eigenvectors. 
-   - Fix Applied (lines 167-175): Formulated an exact 7x7 ACM representation matching the `p=6` instruction for a K=3 tone signal. Identified and mapped the polynomial specifically across the minimum eigenvalue vector associated precisely to Pisarenko Harmonic Decomposition (PHD).
-4. Step 10 (AR Model Processing):
-   - Bug Found: Implicit Yule-Walker solutions were enforced via Numpy linear algebraic routing over Toeplitz blocks. 
-   - Fix Applied (lines 198-208): Explicit deterministic regression `Θ̂ = (AᵀA)⁻¹Aᵀb` constructed mapping historical samples directly into a delayed measurement matrix `A` optimizing the parameters using Standard Least Squares (OLS).
+LAB 01 CHECKLIST
 
---- LAB 02 RECTIFICATIONS ---
-1. Filter Parameter Configuration
-   - Verified that `w_p` dynamically equates perfectly to ~114.22 rad/s and `w_s` scales accurately targeting ~176.76 rad/s.
-2. IIR Order Bounds
-   - Bug Found: The system used `signal.buttord` silently hiding analytical bound equations `N = log(sqrt(...)) / log(w_s/w_p)` demanded strictly by the prompt.
-   - Fix Applied (lines 38-51): Integrated mathematical approximations enforcing absolute analog logarithmic calculations manually returning correct order boundaries natively into Python logs.
-3. Filtering Pipeline Verifications:
-   - Evaluated correctly formatted stopbands (-20 dB from delta_s) and passbands (-0.915 dB from delta_p). Minimum integer filter orders mathematically calculated correspond flawlessly to internally generated approximations. 
+1. Signal 1 uses f1=12, f2=39, f3=71, Fs=200, t from 0 to 100 s
+   CORRECT
+   Notes: Original `lab1_tasks.py` lines 16-24 used the correct frequencies, sampling rate, duration, and zero-mean unit-variance Gaussian noise.
 
-All rectified code was dumped successively to `lab01_verified.py` and `lab02_verified.py` and output visuals updated organically minimizing errors.
+2. Signal 2 chirp is x(t) = sin(20*pi*t + 2*pi*t^2/150), same Fs and duration
+   CORRECT
+   Notes: Original `lab1_tasks.py` line 28 used the correct chirp expression.
+
+3. Noise is `np.random.randn` or equivalent zero-mean, unit-variance Gaussian noise
+   CORRECT
+   Notes: Original `lab1_tasks.py` line 24 used `np.random.normal(0, 1, len(t))`, which satisfies the required distribution. The verified script uses `np.random.randn` semantics through `np.random.randn`.
+
+4. Task 1: time-domain plots and histograms for both signals
+   CORRECT
+   Notes: Original `lab1_tasks.py` lines 30-55 already plotted both signals and both histograms. The verified script changed the save names and uses the first 2 s to match the report brief.
+
+5. Task 2/3 DFT: `scipy.fft.fft`, one-sided Hz axis, peaks identified at 12, 39, 71 Hz
+   FIXED
+   Original issue: `lab1_tasks.py` lines 57-83 used `np.fft.fft` and `np.fft.fftfreq` instead of `scipy.fft.fft`, and the output file naming did not match the required naming convention.
+   Correction: `lab01_verified.py` uses `scipy.fft.fft`, `scipy.fft.fftfreq`, a one-sided Hz axis, and explicit peak extraction. Estimated peaks are 11.9994 Hz, 38.9981 Hz, and 70.9965 Hz.
+
+6. Task 3/4 Spectrogram: `scipy.signal.spectrogram` with appropriate `nperseg` and `noverlap`, plotted with `plt.pcolormesh`
+   FIXED
+   Original issue: `lab1_tasks.py` lines 85-109 used `spectrogram`, but `noverlap` was not specified and the figure naming did not match the requested output files.
+   Correction: `lab01_verified.py` uses `nperseg=512`, `noverlap=384`, `plt.pcolormesh`, and saves `lab01_fig04_spectrogram.png`.
+
+7. Task 5 Autocorrelation Signal 1:
+   - built-in `scipy.signal.correlate(..., mode='full') / N`
+   - manual power-signal estimator
+   - dominant periodicity identified
+   FIXED
+   Original issue: `lab1_tasks.py` lines 111-131 computed only the built-in estimator. The power-signal estimator required by the sheet was missing, and the period was only stated verbally instead of being identified from the plot/data.
+   Correction: `lab01_verified.py` computes both the built-in and the power-signal estimator, plots both, and records the dominant visible periodicity near 0.085 s together with the exact common period of 1.0 s.
+
+8. Task 6 Autocorrelation Signal 2: same two methods applied to chirp
+   FIXED
+   Original issue: `lab1_tasks.py` lines 133-144 computed only the built-in autocorrelation for Signal 2.
+   Correction: `lab01_verified.py` computes and plots both the built-in estimator and the power-signal estimator for the chirp signal.
+
+9. Task 7 Periodogram:
+   - computed as FFT of the full autocorrelation output
+   - plotted in linear scale
+   - one-sided Hz axis
+   FIXED
+   Original issue: `lab1_tasks.py` lines 146-165 called `scipy.signal.periodogram` directly and used semilog plots, which violates the lab requirement.
+   Correction: `lab01_verified.py` computes the periodogram as `abs(fft(ifftshift(r_xx)))`, keeps the plot in linear scale, and uses a one-sided Hz axis. Estimated peaks are 11.9997 Hz, 38.9990 Hz, and 70.9982 Hz.
+
+10. Task 8: ACM size for PHD is 7x7 with the required justification
+   FIXED
+   Original issue: `lab1_tasks.py` lines 167-172 stated only that `M >= 7` and then built a 15x15 matrix.
+   Correction: `lab01_verified.py` explicitly sets `p = 6`, `M = p + 1 = 7`, builds the 7x7 Toeplitz ACM from lags 0...6, and generates the eigenvalue plot.
+
+11. Task 9 MUSIC pseudo-spectrum:
+   - 7x7 ACM
+   - eigendecomposition
+   - one-vector noise subspace
+   - pseudo-spectrum over 0 to Fs/2
+   - peaks near 12, 39, 71 Hz
+   FIXED
+   Original issue: `lab1_tasks.py` lines 167-197 used `M = 15`, so the subspace dimensions did not match the lab specification. The implementation also did not reflect the requested 7x7 ACM construction.
+   Correction: `lab01_verified.py` uses the required 7x7 ACM, isolates the single noise eigenvector, computes `P(w) = 1 / ||E_n^H e(w)||^2`, and estimates 12.1030 Hz, 38.9847 Hz, and 71.1178 Hz.
+
+12. Task 10 AR model:
+   - Toeplitz-style data matrix and vector
+   - least-squares solution
+   - AR spectrum |1/V(e^jw)|^2
+   - model order selected and reported
+   FIXED
+   Original issue: `lab1_tasks.py` lines 199-219 used a fixed order of 10 with no order-selection justification, no eigenvalue-based discussion, and no explicit report-ready estimate summary.
+   Correction: `lab01_verified.py` builds the regression matrix explicitly, solves the least-squares problem, plots the AR power spectrum, and selects order 8 as the smallest LS order that resolves all three tones while remaining close to the ACM elbow at six signal components. Estimated peaks are 12.45 Hz, 39.40 Hz, and 70.40 Hz.
+
+LAB 02 CHECKLIST
+
+13. Filter specs in rad/s with bilinear prewarping
+   FIXED
+   Original issue: `lab2_filter_design.py` lines 15-21 computed `wp` and `ws` correctly but then used direct Hz values for digital design without the required explicit prewarping step.
+   Correction: `lab02_verified.py` computes `Omega_p = 2*Fs*tan(wp/(2*Fs)) = 114.3440 rad/s` and `Omega_s = 177.2422 rad/s` before the IIR order calculations and analog-prototype design.
+
+14. IIR filter order formulas and comparison with `buttord`, `cheb1ord`, `cheb2ord`
+   FIXED
+   Original issue: `lab2_filter_design.py` lines 37-46 delegated the order computation directly to SciPy and did not verify the exact formulas from the lab sheet.
+   Correction: `lab02_verified.py` computes `epsilon_p`, `epsilon_s`, `Omega_s/Omega_p`, the manual Butterworth and Chebyshev orders, and then compares them with SciPy. Results:
+   - Butterworth: 7
+   - Chebyshev I: 4
+   - Chebyshev II: 4
+
+15. FIR filter specifications and minimum-order formulas
+   FIXED
+   Original issue: `lab2_filter_design.py` lines 48-79 used a transition-width calculation in cycles/sample and then applied formulas inconsistently with the lab sheet. The order parity handling was also incorrect for a linear-phase Type-I FIR interpretation.
+   Correction: `lab02_verified.py` uses `Delta_omega_normalized = (ws - wp) / Fs = 0.0625607 rad/sample` with the requested order formulas, then adjusts the orders to even values so that `numtaps = N + 1` is odd and the coefficients remain symmetric. Final FIR orders:
+   - Boxcar: 200
+   - Bartlett: 402
+   - Hann: 402
+   - Hamming: 402
+   - Blackman: 602
+
+16. For each filter, plots of pole-zero, impulse response, gain response in linear and dB, phase response, and group delay
+   FIXED
+   Original issue: `lab2_filter_design.py` lines 81-141 merged pole-zero and impulse response into one file, merged gain/phase/group delay into one file, and did not create the required individually named figures for each filter. The gain figure also omitted the linear-scale subplot and the specification markers.
+   Correction: `lab02_verified.py` generates the full required figure set for all eight filters:
+   - `lab02_fig02_<filter>_pz.png`
+   - `lab02_fig03_<filter>_impulse.png`
+   - `lab02_fig04_<filter>_gain.png`
+   - `lab02_fig05_<filter>_phase.png`
+   - `lab02_fig06_<filter>_gd.png`
+   It also marks `omega_p`, `omega_s`, `delta_p`, and `delta_s`.
+
+17. Task 4 Noise input:
+   - `x = np.random.randn(1000)`
+   - filtering with `lfilter`
+   - output time signal, DFT magnitude, and power spectrum
+   - power spectrum from `fft(xcorr(y,y))`
+   FIXED
+   Original issue: `lab2_filter_design.py` lines 166-202 used a correct white-noise input and `lfilter`, but the power spectrum subplot was produced with `scipy.signal.periodogram` instead of from the autocorrelation FFT.
+   Correction: `lab02_verified.py` keeps the required noise input and filtering method, then computes the power spectrum as `abs(fft(ifftshift(correlate(y,y))))` and saves `lab02_noise_<filter>.png` for all eight filters.
+
+18. Task 5 Chirp input:
+   - `x(t) = sin(2*pi*t^2/100)`, `0 <= t <= 100`, `Fs = 1000`
+   - filtering with `lfilter`
+   - output time signal and spectrogram
+   FIXED
+   Original issue: `lab2_filter_design.py` lines 204-221 used the correct chirp expression, but the output naming did not match the requested files and the script did not enforce the final naming convention consistently across all eight filters.
+   Correction: `lab02_verified.py` generates the chirp exactly as specified, filters it with each of the eight filters, and saves `lab02_chirp_<filter>.png` for all cases.
+
+Generated Output Check
+- Lab 01 required figures generated:
+  - `lab01_fig01_signals.png`
+  - `lab01_fig02_histograms.png`
+  - `lab01_fig03_dft.png`
+  - `lab01_fig04_spectrogram.png`
+  - `lab01_fig05_autocorr_s1.png`
+  - `lab01_fig06_autocorr_s2.png`
+  - `lab01_fig07_periodogram.png`
+  - `lab01_fig08_acm_eigenvalues.png`
+  - `lab01_fig09_music.png`
+  - `lab01_fig10_ar.png`
+- Lab 02 required figures generated:
+  - all `lab02_fig02_*`, `lab02_fig03_*`, `lab02_fig04_*`, `lab02_fig05_*`, `lab02_fig06_*`
+  - all `lab02_noise_*`
+  - all `lab02_chirp_*`
+- `lab02_fig01_orders_table.png` was intentionally skipped as instructed and will be represented as a LaTeX table.
+
+Warnings Observed During Verification
+- SciPy emitted `group_delay` warnings for some filters near `omega = pi`, caused by very small denominator magnitudes at isolated frequencies. Figures were still generated successfully.
+- SciPy emitted one `BadCoefficients` warning while normalizing a very long FIR polynomial for analysis. This did not prevent figure generation or the report computations.
+
+Summary
+- Total checklist items reviewed: 18
+- Checklist items already correct in the provided lab scripts: 4
+- Checklist items fixed in the verified scripts: 14
+- Verified scripts executed successfully:
+  - `lab01_verified.py`
+  - `lab02_verified.py`

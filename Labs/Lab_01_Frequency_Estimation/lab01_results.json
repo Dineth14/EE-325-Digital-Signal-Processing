@@ -1,0 +1,70 @@
+{
+  "student": {
+    "e_number": "E/21/291",
+    "a": 2,
+    "b": 9,
+    "c": 1
+  },
+  "signal_parameters": {
+    "f1_hz": 12,
+    "f2_hz": 39,
+    "f3_hz": 71,
+    "fs_hz": 200.0,
+    "duration_s": 100.0,
+    "n_samples": 20001,
+    "frequency_resolution_hz": 0.00999950002499875,
+    "spectrogram_nperseg": 512,
+    "spectrogram_noverlap": 384
+  },
+  "task_3_dft_estimates_hz": [
+    11.999400029998501,
+    38.99805009749513,
+    70.99645017749113
+  ],
+  "task_5_signal_1": {
+    "dominant_visible_period_s": 0.085,
+    "exact_common_period_s": 1.0
+  },
+  "task_7_periodogram_peak_estimates_hz": [
+    11.999700007499813,
+    38.99902502437439,
+    70.9982250443739
+  ],
+  "task_8": {
+    "p": 6,
+    "acm_size": 7,
+    "eigenvalues_desc": [
+      3.252213209361419,
+      2.9078284748672316,
+      2.8242601040123905,
+      2.6414037220756597,
+      2.488929432450953,
+      2.125188207295209,
+      0.972877109536089
+    ]
+  },
+  "task_9_music_estimates_hz": [
+    12.103025756439111,
+    38.98474618654664,
+    71.11777944486121
+  ],
+  "task_10_ar": {
+    "model_order": 8,
+    "estimated_frequencies_hz": [
+      12.450000000000001,
+      39.4,
+      70.4
+    ],
+    "selection_note": "Order 8 was chosen as the smallest least-squares AR model that resolved all three tones while remaining close to the ACM eigenvalue elbow at six signal components.",
+    "theta_hat": [
+      0.10044666958803432,
+      -0.001701292504799938,
+      0.09918321731918543,
+      -0.156852774328214,
+      0.19179501933339727,
+      0.08736236553183857,
+      -0.4577118301206875,
+      -0.21522485364525865
+    ]
+  }
+}

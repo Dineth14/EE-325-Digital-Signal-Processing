@@ -1,218 +1,348 @@
-import numpy as np
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-import scipy.signal as signal
+import json
 import math
-import os
+from pathlib import Path
 
-def run_lab2():
-    out_dir = '.' # Working in outputs directory
-    
-    # Filter constraints
-    wp_analog = 114.22 # rad/s
-    ws_analog = 176.76 # rad/s
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy import signal
+
+
+OUTPUT_DIR = Path(".")
+
+
+def save_figure(filename: str) -> None:
+    plt.savefig(OUTPUT_DIR / filename, dpi=150, bbox_inches="tight")
+    plt.close("all")
+
+
+def impulse_response(b: np.ndarray, a: np.ndarray, length: int) -> np.ndarray:
+    impulse = np.zeros(length)
+    impulse[0] = 1.0
+    return signal.lfilter(b, a, impulse)
+
+
+def noise_power_spectrum(y: np.ndarray, fs: float) -> tuple[np.ndarray, np.ndarray]:
+    corr = signal.correlate(y, y, mode="full", method="fft")
+    power = np.abs(np.fft.fft(np.fft.ifftshift(corr)))
+    freqs = np.fft.fftfreq(len(corr), d=1.0 / fs)
+    mask = freqs >= 0.0
+    return freqs[mask], power[mask]
+
+
+def response_metrics(freqs_hz: np.ndarray, magnitude: np.ndarray, fp_hz: float, fs_hz: float) -> dict:
+    passband_mask = freqs_hz <= fp_hz
+    stopband_mask = freqs_hz >= fs_hz
+    return {
+        "min_passband_gain": float(np.min(magnitude[passband_mask])),
+        "max_stopband_gain": float(np.max(magnitude[stopband_mask])),
+    }
+
+
+def iir_transfer_summary(sos: np.ndarray) -> list[list[float]]:
+    return [[float(value) for value in row] for row in sos]
+
+
+def main() -> None:
+    a, b, c, d = 2, 9, 1, 3
+    fs = 1000.0
     delta_s = 0.1
     delta_p = 0.9
-    Fs = 1000
-    
-    # Pre-warping for IIR digital bounds
-    Op = 2 * Fs * math.tan(wp_analog / (2 * Fs))
-    Os = 2 * Fs * math.tan(ws_analog / (2 * Fs))
-    
-    ep = math.sqrt(1.0/(delta_p**2) - 1)
-    es = math.sqrt(1.0/(delta_s**2) - 1)
-    O_ratio = Os / Op
-    
-    N_butter_calc = math.log10(es / ep) / math.log10(O_ratio)
-    N_butter = math.ceil(N_butter_calc)
-    
-    N_cheb_calc = math.acosh(es / ep) / math.acosh(O_ratio)
-    N_cheby1 = math.ceil(N_cheb_calc)
-    N_cheby2 = math.ceil(N_cheb_calc)
-    
-    print(f"IIR Orders: Butter={N_butter}, Cheby1={N_cheby1}, Cheby2={N_cheby2}")
-    
-    # FIR calculations
-    dw_analog = ws_analog - wp_analog # 62.54 rad/s
-    dw_norm = dw_analog / Fs # radians/sample
-    
-    N_boxcar = math.ceil(4 * math.pi / dw_norm) - 1
-    N_bartlett = math.ceil(8 * math.pi / dw_norm) - 1
-    N_hann = math.ceil(8 * math.pi / dw_norm) - 1
-    N_hamming = math.ceil(8 * math.pi / dw_norm) - 1
-    N_blackman = math.ceil(12 * math.pi / dw_norm) - 1
-    
-    # ensure symmetric odd lengths for type I linear phase (so order N must be even)
-    # Harris filter order N is the number of taps - 1. 
-    # FIR filters with N taps have order N-1. `firwin` takes numtaps which is N+1 if N is order.
-    # The prompt formulas are for N (filter order). Thus numtaps = N + 1. 
-    # Let's ensure order is even -> Type 1 FIR -> numtaps is odd.
-    if N_boxcar % 2 != 0: N_boxcar += 1
-    if N_bartlett % 2 != 0: N_bartlett += 1
-    if N_hann % 2 != 0: N_hann += 1
-    if N_hamming % 2 != 0: N_hamming += 1
-    if N_blackman % 2 != 0: N_blackman += 1
+    delta_t = 0.1
 
-    print(f"FIR Orders: Boxcar={N_boxcar}, Bartlett={N_bartlett}, Hann={N_hann}, Hamming={N_hamming}, Blackman={N_blackman}")
-    
-    # Generate Filters
-    # IIR filters use direct frequencies for buttord/butter since they implicitly prewarp if analog=False
-    # But we already computed N, so we just calculate natural frequencies.
-    # For digital filters, cutoff requires normalization by Fs/2
-    fp_norm = (wp_analog / (2 * math.pi)) / (Fs / 2)
-    fs_norm = (ws_analog / (2 * math.pi)) / (Fs / 2)
-    
-    # Wn for butterworth can be calculated by buttord or set near passband
-    N_butt_sp, Wn_butt = signal.buttord(fp_norm, fs_norm, -20*math.log10(delta_p), -20*math.log10(delta_s))
-    N_c1_sp, Wn_c1 = signal.cheb1ord(fp_norm, fs_norm, -20*math.log10(delta_p), -20*math.log10(delta_s))
-    N_c2_sp, Wn_c2 = signal.cheb2ord(fp_norm, fs_norm, -20*math.log10(delta_p), -20*math.log10(delta_s))
+    wp = 100.0 + math.sqrt(1.1 * a + 11.0 * b + 101.0 * c)
+    ws = wp * (1.0 + math.sqrt(d / 10.0))
+    fp_hz = wp / (2.0 * math.pi)
+    fs_hz = ws / (2.0 * math.pi)
+    wc = 0.5 * (wp + ws)
+    fc_hz = wc / (2.0 * math.pi)
+
+    omega_p = 2.0 * fs * math.tan(wp / (2.0 * fs))
+    omega_s = 2.0 * fs * math.tan(ws / (2.0 * fs))
+    epsilon_p = math.sqrt(1.0 / (delta_p**2) - 1.0)
+    epsilon_s = math.sqrt(1.0 / (delta_s**2) - 1.0)
+    omega_ratio = omega_s / omega_p
+
+    butter_order_manual = math.ceil(math.log(epsilon_s / epsilon_p) / math.log(omega_ratio))
+    cheby_order_manual = math.ceil(math.acosh(epsilon_s / epsilon_p) / math.acosh(omega_ratio))
+
+    rp_db = -20.0 * math.log10(delta_p)
+    rs_db = -20.0 * math.log10(delta_s)
+    butter_order_scipy, butter_wn = signal.buttord(omega_p, omega_s, rp_db, rs_db, analog=True)
+    cheby1_order_scipy, cheby1_wn = signal.cheb1ord(omega_p, omega_s, rp_db, rs_db, analog=True)
+    cheby2_order_scipy, cheby2_wn = signal.cheb2ord(omega_p, omega_s, rp_db, rs_db, analog=True)
+
+    delta_omega_normalized = (ws - wp) / fs
+    fir_orders = {
+        "boxcar": math.ceil(4.0 * math.pi / delta_omega_normalized) - 1,
+        "bartlett": math.ceil(8.0 * math.pi / delta_omega_normalized) - 1,
+        "hann": math.ceil(8.0 * math.pi / delta_omega_normalized) - 1,
+        "hamming": math.ceil(8.0 * math.pi / delta_omega_normalized) - 1,
+        "blackman": math.ceil(12.0 * math.pi / delta_omega_normalized) - 1,
+    }
+    for key, order in list(fir_orders.items()):
+        if order % 2 != 0:
+            fir_orders[key] = order + 1
+
+    butter_ba_analog = signal.butter(butter_order_scipy, butter_wn, btype="low", analog=True, output="ba")
+    cheby1_ba_analog = signal.cheby1(
+        cheby1_order_scipy, rp_db, cheby1_wn, btype="low", analog=True, output="ba"
+    )
+    cheby2_ba_analog = signal.cheby2(
+        cheby2_order_scipy, rs_db, cheby2_wn, btype="low", analog=True, output="ba"
+    )
+
+    butter_bz = signal.bilinear(*butter_ba_analog, fs=fs)
+    cheby1_bz = signal.bilinear(*cheby1_ba_analog, fs=fs)
+    cheby2_bz = signal.bilinear(*cheby2_ba_analog, fs=fs)
 
     filters = {
-        'butter': signal.butter(N_butter, Wn_butt, btype='low', analog=False),
-        'cheby1': signal.cheby1(N_cheby1, -20*math.log10(delta_p), Wn_c1, btype='low', analog=False),
-        'cheby2': signal.cheby2(N_cheby2, -20*math.log10(delta_s), Wn_c2, btype='low', analog=False),
-        'boxcar': (signal.firwin(N_boxcar + 1, (fp_norm+fs_norm)/2, window='boxcar'), [1.0]),
-        'bartlett': (signal.firwin(N_bartlett + 1, (fp_norm+fs_norm)/2, window='bartlett'), [1.0]),
-        'hann': (signal.firwin(N_hann + 1, (fp_norm+fs_norm)/2, window='hann'), [1.0]),
-        'hamming': (signal.firwin(N_hamming + 1, (fp_norm+fs_norm)/2, window='hamming'), [1.0]),
-        'blackman': (signal.firwin(N_blackman + 1, (fp_norm+fs_norm)/2, window='blackman'), [1.0])
+        "butter": {
+            "display": "Butterworth",
+            "kind": "IIR",
+            "b": np.asarray(butter_bz[0], dtype=float),
+            "a": np.asarray(butter_bz[1], dtype=float),
+            "sos": signal.tf2sos(*butter_bz),
+            "order": int(butter_order_scipy),
+        },
+        "cheby1": {
+            "display": "Chebyshev Type I",
+            "kind": "IIR",
+            "b": np.asarray(cheby1_bz[0], dtype=float),
+            "a": np.asarray(cheby1_bz[1], dtype=float),
+            "sos": signal.tf2sos(*cheby1_bz),
+            "order": int(cheby1_order_scipy),
+        },
+        "cheby2": {
+            "display": "Chebyshev Type II",
+            "kind": "IIR",
+            "b": np.asarray(cheby2_bz[0], dtype=float),
+            "a": np.asarray(cheby2_bz[1], dtype=float),
+            "sos": signal.tf2sos(*cheby2_bz),
+            "order": int(cheby2_order_scipy),
+        },
     }
-    
-    # 5 base plots per filter + 2 input tasks
-    for name, (b, a) in filters.items():
-        w, h = signal.freqz(b, a, worN=8000, fs=Fs)
-        z, p, k = signal.tf2zpk(b, a)
-        
-        # (a) Pole zero
+
+    for name, order in fir_orders.items():
+        numtaps = order + 1
+        filters[name] = {
+            "display": name.capitalize() if name != "boxcar" else "Boxcar",
+            "kind": "FIR",
+            "b": signal.firwin(numtaps, fc_hz, window=name, fs=fs),
+            "a": np.array([1.0]),
+            "sos": [],
+            "order": int(order),
+        }
+
+    noise_input = np.random.default_rng(291).standard_normal(1000)
+    t_noise = np.arange(noise_input.size) / fs
+    t_chirp = np.linspace(0.0, 100.0, int(100.0 * fs) + 1)
+    chirp_input = np.sin(2.0 * np.pi * t_chirp**2 / 100.0)
+
+    results = {
+        "student": {"e_number": "E/21/291", "a": a, "b": b, "c": c, "d": d},
+        "specifications": {
+            "wp_rad_per_s": wp,
+            "ws_rad_per_s": ws,
+            "fp_hz": fp_hz,
+            "fs_hz": fs_hz,
+            "wc_rad_per_s": wc,
+            "fc_hz": fc_hz,
+            "omega_p_prewarped": omega_p,
+            "omega_s_prewarped": omega_s,
+            "epsilon_p": epsilon_p,
+            "epsilon_s": epsilon_s,
+            "omega_ratio": omega_ratio,
+            "delta_omega_normalized": delta_omega_normalized,
+            "delta_t": delta_t,
+        },
+        "orders": {
+            "manual": {
+                "butterworth": butter_order_manual,
+                "chebyshev_type_i": cheby_order_manual,
+                "chebyshev_type_ii": cheby_order_manual,
+                "boxcar": fir_orders["boxcar"],
+                "bartlett": fir_orders["bartlett"],
+                "hann": fir_orders["hann"],
+                "hamming": fir_orders["hamming"],
+                "blackman": fir_orders["blackman"],
+            },
+            "scipy": {
+                "butterworth": int(butter_order_scipy),
+                "chebyshev_type_i": int(cheby1_order_scipy),
+                "chebyshev_type_ii": int(cheby2_order_scipy),
+            },
+        },
+        "filters": {},
+    }
+
+    short_name_to_display = {
+        "butter": "Butterworth",
+        "cheby1": "Chebyshev Type I",
+        "cheby2": "Chebyshev Type II",
+        "boxcar": "Boxcar",
+        "bartlett": "Bartlett",
+        "hann": "Hann",
+        "hamming": "Hamming",
+        "blackman": "Blackman",
+    }
+
+    for short_name, config in filters.items():
+        b_coeff = np.asarray(config["b"], dtype=float)
+        a_coeff = np.asarray(config["a"], dtype=float)
+
+        z, p, _ = signal.tf2zpk(b_coeff, a_coeff)
+        freq_axis, response = signal.freqz(b_coeff, a_coeff, worN=4096, fs=fs)
+        magnitude = np.abs(response)
+        magnitude_db = 20.0 * np.log10(magnitude + 1e-12)
+        phase = np.unwrap(np.angle(response))
+        gd_freqs, gd_values = signal.group_delay((b_coeff, a_coeff), w=2048, fs=fs)
+        metrics = response_metrics(freq_axis, magnitude, fp_hz, fs_hz)
+
         plt.figure(figsize=(6, 6))
-        plt.scatter(np.real(z), np.imag(z), marker='o', color='blue', label='Zeros')
-        plt.scatter(np.real(p), np.imag(p), marker='x', color='red', label='Poles')
-        plt.gca().add_patch(plt.Circle((0,0), 1, color='gray', fill=False, linestyle='--'))
-        plt.title(f"{name} Pole-Zero Plot")
+        plt.scatter(np.real(z), np.imag(z), s=28, facecolors="none", edgecolors="tab:blue", label="Zeros")
+        plt.scatter(np.real(p), np.imag(p), s=32, marker="x", color="tab:red", label="Poles")
+        circle = plt.Circle((0.0, 0.0), 1.0, fill=False, linestyle="--", color="gray")
+        plt.gca().add_patch(circle)
+        plt.axhline(0.0, color="black", linewidth=0.5)
+        plt.axvline(0.0, color="black", linewidth=0.5)
+        plt.title(f"{short_name_to_display[short_name]} Pole-Zero Plot")
         plt.xlabel("Real")
         plt.ylabel("Imaginary")
-        plt.xlim([-1.5, 1.5])
-        plt.ylim([-1.5, 1.5])
-        plt.grid(True)
-        plt.legend()
-        plt.savefig(os.path.join(out_dir, f'lab02_fig_pz_{name}.png'), dpi=150, bbox_inches='tight')
-        plt.close('all')
-        
-        # (b) Impulse response
-        n_impulse = 60 if len(p) > 0 else len(b) + 10
-        impulse = np.zeros(n_impulse)
-        impulse[0] = 1
-        h_imp = signal.lfilter(b, a, impulse)
-        
-        plt.figure(figsize=(8, 4))
-        plt.stem(np.arange(n_impulse), h_imp)
-        plt.title(f"{name} Impulse Response")
+        plt.axis("equal")
+        plt.grid(True, alpha=0.3)
+        plt.legend(loc="upper right")
+        plt.tight_layout()
+        save_figure(f"lab02_fig02_{short_name}_pz.png")
+
+        impulse_len = 220 if config["kind"] == "IIR" else len(b_coeff)
+        h = impulse_response(b_coeff, a_coeff, impulse_len)
+        plt.figure(figsize=(9, 4))
+        plt.stem(np.arange(impulse_len), h, basefmt=" ")
+        plt.title(f"{short_name_to_display[short_name]} Impulse Response")
         plt.xlabel("n")
         plt.ylabel("h[n]")
-        plt.grid(True)
-        plt.savefig(os.path.join(out_dir, f'lab02_fig_impulse_{name}.png'), dpi=150, bbox_inches='tight')
-        plt.close('all')
-        
-        # (c) Gain response
-        plt.figure(figsize=(10, 8))
+        plt.grid(True, alpha=0.3)
+        plt.tight_layout()
+        save_figure(f"lab02_fig03_{short_name}_impulse.png")
+
+        plt.figure(figsize=(10, 7))
         plt.subplot(2, 1, 1)
-        plt.plot(w, np.abs(h))
-        plt.axvline(wp_analog/(2*math.pi), color='g', linestyle='--', label='fp')
-        plt.axvline(ws_analog/(2*math.pi), color='r', linestyle='--', label='fs')
-        plt.title(f"{name} Gain Response (Linear)")
+        plt.plot(freq_axis, magnitude, linewidth=1.0)
+        plt.axvline(fp_hz, color="tab:green", linestyle="--", label=r"$\omega_p$")
+        plt.axvline(fs_hz, color="tab:red", linestyle="--", label=r"$\omega_s$")
+        plt.axhline(delta_p, color="tab:green", linestyle=":", label=r"$\delta_p$")
+        plt.axhline(delta_s, color="tab:red", linestyle=":", label=r"$\delta_s$")
+        plt.title(f"{short_name_to_display[short_name]} Gain Response")
         plt.xlabel("Frequency (Hz)")
-        plt.ylabel("Magnitude")
-        plt.grid(True)
-        plt.legend()
-        
+        plt.ylabel(r"$|H(e^{j\omega})|$")
+        plt.grid(True, alpha=0.3)
+        plt.legend(loc="upper right")
         plt.subplot(2, 1, 2)
-        plt.plot(w, 20*np.log10(np.abs(h)+1e-12))
-        plt.axvline(wp_analog/(2*math.pi), color='g', linestyle='--')
-        plt.axvline(ws_analog/(2*math.pi), color='r', linestyle='--')
-        plt.axhline(20*math.log10(delta_p), color='g', linestyle=':')
-        plt.axhline(20*math.log10(delta_s), color='r', linestyle=':')
-        plt.title(f"{name} Gain Response (dB)")
+        plt.plot(freq_axis, magnitude_db, linewidth=1.0)
+        plt.axvline(fp_hz, color="tab:green", linestyle="--")
+        plt.axvline(fs_hz, color="tab:red", linestyle="--")
+        plt.axhline(20.0 * math.log10(delta_p), color="tab:green", linestyle=":")
+        plt.axhline(20.0 * math.log10(delta_s), color="tab:red", linestyle=":")
         plt.xlabel("Frequency (Hz)")
         plt.ylabel("Magnitude (dB)")
-        plt.grid(True)
+        plt.grid(True, alpha=0.3)
         plt.tight_layout()
-        plt.savefig(os.path.join(out_dir, f'lab02_fig_gain_{name}.png'), dpi=150, bbox_inches='tight')
-        plt.close('all')
-        
-        # (d) Phase response
-        plt.figure(figsize=(8, 4))
-        plt.plot(w, np.unwrap(np.angle(h)))
-        plt.title(f"{name} Phase Response")
+        save_figure(f"lab02_fig04_{short_name}_gain.png")
+
+        plt.figure(figsize=(9, 4))
+        plt.plot(freq_axis, phase, linewidth=1.0)
+        plt.title(f"{short_name_to_display[short_name]} Phase Response")
         plt.xlabel("Frequency (Hz)")
-        plt.ylabel("Phase (radians)")
-        plt.grid(True)
-        plt.savefig(os.path.join(out_dir, f'lab02_fig_phase_{name}.png'), dpi=150, bbox_inches='tight')
-        plt.close('all')
-        
-        # (e) Group delay
-        w_gd, gd = signal.group_delay((b, a), w=8000, fs=Fs)
-        plt.figure(figsize=(8, 4))
-        plt.plot(w_gd, gd)
-        plt.title(f"{name} Group Delay")
+        plt.ylabel("Phase (rad)")
+        plt.grid(True, alpha=0.3)
+        plt.tight_layout()
+        save_figure(f"lab02_fig05_{short_name}_phase.png")
+
+        plt.figure(figsize=(9, 4))
+        plt.plot(gd_freqs, gd_values, linewidth=1.0)
+        plt.title(f"{short_name_to_display[short_name]} Group Delay")
         plt.xlabel("Frequency (Hz)")
-        plt.ylabel("Group Delay (samples)")
-        plt.grid(True)
-        plt.savefig(os.path.join(out_dir, f'lab02_fig_gd_{name}.png'), dpi=150, bbox_inches='tight')
-        plt.close('all')
-        
-        # Input Tasks
-        # Noise
-        np.random.seed(42)
-        x_noise = np.random.randn(1000)
-        y_noise = signal.lfilter(b, a, x_noise)
-        
-        Y_noise = np.fft.fft(y_noise)
-        f_noise = np.fft.fftfreq(len(y_noise), 1/Fs)
-        pos = f_noise >= 0
-        
-        # PSD = fft(xcorr(y, y))
-        rxx_y = signal.correlate(y_noise, y_noise, mode='full')
-        psd_y = np.abs(np.fft.fft(np.fft.ifftshift(rxx_y/len(y_noise))))
-        f_psd = np.fft.fftfreq(len(rxx_y), 1/Fs)
-        pos_psd = f_psd >= 0
-        
+        plt.ylabel("Samples")
+        plt.grid(True, alpha=0.3)
+        plt.tight_layout()
+        save_figure(f"lab02_fig06_{short_name}_gd.png")
+
+        noise_output = signal.lfilter(b_coeff, a_coeff, noise_input)
+        noise_fft = np.fft.fft(noise_output)
+        noise_freqs = np.fft.fftfreq(noise_output.size, d=1.0 / fs)
+        noise_mask = noise_freqs >= 0.0
+        psd_freqs, psd_values = noise_power_spectrum(noise_output, fs)
+
         plt.figure(figsize=(10, 8))
         plt.subplot(3, 1, 1)
-        plt.plot(np.arange(1000)/Fs, y_noise)
-        plt.title(f"{name} Filtered Noise (Time)")
+        plt.plot(t_noise, noise_output, linewidth=0.8)
+        plt.title(f"{short_name_to_display[short_name]} Output for White Gaussian Noise")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Amplitude")
+        plt.grid(True, alpha=0.3)
         plt.subplot(3, 1, 2)
-        plt.plot(f_noise[pos], np.abs(Y_noise[pos]))
-        plt.title(f"{name} Filtered Noise (DFT Magnitude)")
+        plt.plot(noise_freqs[noise_mask], np.abs(noise_fft[noise_mask]), linewidth=0.8)
+        plt.title("One-Sided DFT Magnitude")
+        plt.xlabel("Frequency (Hz)")
+        plt.ylabel(r"$|Y[k]|$")
+        plt.grid(True, alpha=0.3)
         plt.subplot(3, 1, 3)
-        plt.semilogy(f_psd[pos_psd], psd_y[pos_psd])
-        plt.title(f"{name} Filtered Noise (Power Spectrum)")
+        plt.plot(psd_freqs, psd_values, linewidth=0.8)
+        plt.title("Power Spectrum from the FFT of the Autocorrelation")
+        plt.xlabel("Frequency (Hz)")
+        plt.ylabel("Power")
+        plt.grid(True, alpha=0.3)
         plt.tight_layout()
-        plt.savefig(os.path.join(out_dir, f'lab02_noise_{name}.png'), dpi=150, bbox_inches='tight')
-        plt.close('all')
-        
-        # Chirp
-        t_chirp = np.arange(0, 100*Fs) / Fs
-        # 0 to 100s, freq goes 0 to 2Hz, correctly mapped linearly using instantaneous frequency = t/50
-        x_chirp = np.sin(2 * np.pi * t_chirp**2 / 100)
-        y_chirp = signal.lfilter(b, a, x_chirp)
-        
-        freqs, times, Sxx = signal.spectrogram(y_chirp, fs=Fs, nperseg=256)
-        
+        save_figure(f"lab02_noise_{short_name}.png")
+
+        chirp_output = signal.lfilter(b_coeff, a_coeff, chirp_input)
+        chirp_spec_f, chirp_spec_t, chirp_spec = signal.spectrogram(
+            chirp_output, fs=fs, nperseg=4096, noverlap=3072, scaling="density"
+        )
+
         plt.figure(figsize=(10, 8))
         plt.subplot(2, 1, 1)
-        plt.plot(t_chirp, y_chirp)
-        plt.title(f"{name} Filtered Chirp (Time)")
+        plt.plot(t_chirp, chirp_output, linewidth=0.7)
+        plt.title(f"{short_name_to_display[short_name]} Output for the Chirp Input")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Amplitude")
+        plt.grid(True, alpha=0.3)
         plt.subplot(2, 1, 2)
-        plt.pcolormesh(times, freqs, 10 * np.log10(Sxx + 1e-10), shading='gouraud')
-        plt.title(f"{name} Filtered Chirp (Spectrogram)")
-        plt.ylabel('Frequency (Hz)')
-        plt.xlabel('Time (s)')
-        # Limit axis to focus on low freq band up to 10Hz
-        plt.ylim([0, 10])
+        plt.pcolormesh(
+            chirp_spec_t,
+            chirp_spec_f,
+            10.0 * np.log10(chirp_spec + 1e-12),
+            shading="auto",
+        )
+        plt.ylim(0.0, 30.0)
+        plt.title("Output Spectrogram")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Frequency (Hz)")
+        plt.colorbar(label="Power/Frequency (dB/Hz)")
         plt.tight_layout()
-        plt.savefig(os.path.join(out_dir, f'lab02_chirp_{name}.png'), dpi=150, bbox_inches='tight')
-        plt.close('all')
+        save_figure(f"lab02_chirp_{short_name}.png")
 
-if __name__ == '__main__':
-    run_lab2()
+        results["filters"][short_name] = {
+            "display_name": short_name_to_display[short_name],
+            "type": config["kind"],
+            "order": config["order"],
+            "num_degree": len(b_coeff) - 1,
+            "den_degree": len(a_coeff) - 1,
+            "numerator": [float(value) for value in b_coeff],
+            "denominator": [float(value) for value in a_coeff],
+            "sos": iir_transfer_summary(config["sos"]) if config["kind"] == "IIR" else [],
+            "min_passband_gain": metrics["min_passband_gain"],
+            "max_stopband_gain": metrics["max_stopband_gain"],
+            "max_pole_radius": float(np.max(np.abs(p))) if p.size else 0.0,
+        }
+
+    with open(OUTPUT_DIR / "lab02_results.json", "w", encoding="utf-8") as file:
+        json.dump(results, file, indent=2)
+
+    print(json.dumps(results, indent=2))
+
+
+if __name__ == "__main__":
+    main()

@@ -1,227 +1,218 @@
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import scipy.signal as signal
-import os
 import math
+import os
 
 def run_lab2():
-    if not os.path.exists('plots'):
-        os.makedirs('plots')
+    out_dir = '.' # Working in outputs directory
     
-    # E/21/291 -> a=2, b=9, c=1
-    a, b, c = 2, 9, 1
-    d_sum = 12
-    d = 3
-    
-    w_p = 100 + np.sqrt(1.1 * a + 11 * b + 101 * c)
-    w_s = w_p * (1 + np.sqrt(d / 10.0))
-    
-    Fs = 1000 # Hz
-    f_p = w_p / (2 * np.pi)
-    f_s = w_s / (2 * np.pi)
-    
+    # Filter constraints
+    wp_analog = 114.22 # rad/s
+    ws_analog = 176.76 # rad/s
     delta_s = 0.1
     delta_p = 0.9
+    Fs = 1000
     
-    Rs = -20 * np.log10(delta_s) # 20 dB
-    Rp = -20 * np.log10(delta_p) # ~0.915 dB
+    # Pre-warping for IIR digital bounds
+    Op = 2 * Fs * math.tan(wp_analog / (2 * Fs))
+    Os = 2 * Fs * math.tan(ws_analog / (2 * Fs))
     
-    print("--- Filter Specifications ---")
-    print(f"Passband cutoff w_p = {w_p:.2f} rad/s")
-    print(f"Stopband cutoff w_s = {w_s:.2f} rad/s")
-    print(f"Passband cutoff f_p = {f_p:.2f} Hz")
-    print(f"Stopband cutoff f_s = {f_s:.2f} Hz")
-    print(f"Max stopband gain delta_s = {delta_s} (Rs = {Rs:.2f} dB)")
-    print(f"Min passband gain delta_p = {delta_p} (Rp = {Rp:.2f} dB)")
+    ep = math.sqrt(1.0/(delta_p**2) - 1)
+    es = math.sqrt(1.0/(delta_s**2) - 1)
+    O_ratio = Os / Op
     
-    # 1. IIR Order Calculation using Analytical Formulas
-    print("\n--- IIR Filter Orders (Analytically Computed) ---")
-    term_s = (1.0 / delta_s**2) - 1.0
-    term_p = (1.0 / delta_p**2) - 1.0
-    ratio_w = w_s / w_p
+    N_butter_calc = math.log10(es / ep) / math.log10(O_ratio)
+    N_butter = math.ceil(N_butter_calc)
     
-    N_butt_calc = math.log10(math.sqrt(term_s / term_p)) / math.log10(ratio_w)
-    N_butt = math.ceil(N_butt_calc)
-    print(f"Butterworth Order: {N_butt} (computed: {N_butt_calc:.4f})")
+    N_cheb_calc = math.acosh(es / ep) / math.acosh(O_ratio)
+    N_cheby1 = math.ceil(N_cheb_calc)
+    N_cheby2 = math.ceil(N_cheb_calc)
     
-    N_cheb_calc = math.acosh(math.sqrt(term_s / term_p)) / math.acosh(ratio_w)
-    N_cheb1 = math.ceil(N_cheb_calc)
-    N_cheb2 = math.ceil(N_cheb_calc)
-    print(f"Chebyshev Type I Order: {N_cheb1} (computed: {N_cheb_calc:.4f})")
-    print(f"Chebyshev Type II Order: {N_cheb2} (computed: {N_cheb_calc:.4f})")
+    print(f"IIR Orders: Butter={N_butter}, Cheby1={N_cheby1}, Cheby2={N_cheby2}")
     
-    # We still need the appropriate matching Wn frequencies to feed into scipy functions.
-    # Scipy expects the digital pre-warped cutoff naturally matching the -3dB or passband points respectively.
-    _, Wn_butt = signal.buttord(f_p, f_s, Rp, Rs, fs=Fs)
-    _, Wn_cheb1 = signal.cheb1ord(f_p, f_s, Rp, Rs, fs=Fs)
-    _, Wn_cheb2 = signal.cheb2ord(f_p, f_s, Rp, Rs, fs=Fs)
+    # FIR calculations
+    dw_analog = ws_analog - wp_analog # 62.54 rad/s
+    dw_norm = dw_analog / Fs # radians/sample
     
-    # FIR Order Calculation
-    delta_f = (f_s - f_p) / Fs
-    delta_w = 2 * np.pi * delta_f
+    N_boxcar = math.ceil(4 * math.pi / dw_norm) - 1
+    N_bartlett = math.ceil(8 * math.pi / dw_norm) - 1
+    N_hann = math.ceil(8 * math.pi / dw_norm) - 1
+    N_hamming = math.ceil(8 * math.pi / dw_norm) - 1
+    N_blackman = math.ceil(12 * math.pi / dw_norm) - 1
     
-    N_rect = math.ceil(4 * np.pi / delta_w)
-    N_bart = math.ceil(8 * np.pi / delta_w)
-    N_hann = math.ceil(8 * np.pi / delta_w)
-    N_hamm = math.ceil(8 * np.pi / delta_w)
-    N_blck = math.ceil(12 * np.pi / delta_w)
-    
-    # Type I FIR needs odd order (even order parameter in firwin)
-    if N_rect % 2 == 0: N_rect += 1
-    if N_bart % 2 == 0: N_bart += 1
-    if N_hann % 2 == 0: N_hann += 1
-    if N_hamm % 2 == 0: N_hamm += 1
-    if N_blck % 2 == 0: N_blck += 1
+    # ensure symmetric odd lengths for type I linear phase (so order N must be even)
+    # Harris filter order N is the number of taps - 1. 
+    # FIR filters with N taps have order N-1. `firwin` takes numtaps which is N+1 if N is order.
+    # The prompt formulas are for N (filter order). Thus numtaps = N + 1. 
+    # Let's ensure order is even -> Type 1 FIR -> numtaps is odd.
+    if N_boxcar % 2 != 0: N_boxcar += 1
+    if N_bartlett % 2 != 0: N_bartlett += 1
+    if N_hann % 2 != 0: N_hann += 1
+    if N_hamming % 2 != 0: N_hamming += 1
+    if N_blackman % 2 != 0: N_blackman += 1
 
-    print("\n--- FIR Filter Orders ---")
-    print(f"Boxcar (Rectangular) Order: {N_rect}")
-    print(f"Bartlett (Triangular) Order: {N_bart}")
-    print(f"Hann Order: {N_hann}")
-    print(f"Hamming Order: {N_hamm}")
-    print(f"Blackman Order: {N_blck}")
+    print(f"FIR Orders: Boxcar={N_boxcar}, Bartlett={N_bartlett}, Hann={N_hann}, Hamming={N_hamming}, Blackman={N_blackman}")
     
-    # Define generic plotting functions
-    def plot_filter_responses(b, a, name, filename_prefix):
+    # Generate Filters
+    # IIR filters use direct frequencies for buttord/butter since they implicitly prewarp if analog=False
+    # But we already computed N, so we just calculate natural frequencies.
+    # For digital filters, cutoff requires normalization by Fs/2
+    fp_norm = (wp_analog / (2 * math.pi)) / (Fs / 2)
+    fs_norm = (ws_analog / (2 * math.pi)) / (Fs / 2)
+    
+    # Wn for butterworth can be calculated by buttord or set near passband
+    N_butt_sp, Wn_butt = signal.buttord(fp_norm, fs_norm, -20*math.log10(delta_p), -20*math.log10(delta_s))
+    N_c1_sp, Wn_c1 = signal.cheb1ord(fp_norm, fs_norm, -20*math.log10(delta_p), -20*math.log10(delta_s))
+    N_c2_sp, Wn_c2 = signal.cheb2ord(fp_norm, fs_norm, -20*math.log10(delta_p), -20*math.log10(delta_s))
+
+    filters = {
+        'butter': signal.butter(N_butter, Wn_butt, btype='low', analog=False),
+        'cheby1': signal.cheby1(N_cheby1, -20*math.log10(delta_p), Wn_c1, btype='low', analog=False),
+        'cheby2': signal.cheby2(N_cheby2, -20*math.log10(delta_s), Wn_c2, btype='low', analog=False),
+        'boxcar': (signal.firwin(N_boxcar + 1, (fp_norm+fs_norm)/2, window='boxcar'), [1.0]),
+        'bartlett': (signal.firwin(N_bartlett + 1, (fp_norm+fs_norm)/2, window='bartlett'), [1.0]),
+        'hann': (signal.firwin(N_hann + 1, (fp_norm+fs_norm)/2, window='hann'), [1.0]),
+        'hamming': (signal.firwin(N_hamming + 1, (fp_norm+fs_norm)/2, window='hamming'), [1.0]),
+        'blackman': (signal.firwin(N_blackman + 1, (fp_norm+fs_norm)/2, window='blackman'), [1.0])
+    }
+    
+    # 5 base plots per filter + 2 input tasks
+    for name, (b, a) in filters.items():
         w, h = signal.freqz(b, a, worN=8000, fs=Fs)
-        mag = 20 * np.log10(np.abs(h) + 1e-12)
-        phase = np.unwrap(np.angle(h))
-        
-        # 1. Pole Zero
         z, p, k = signal.tf2zpk(b, a)
-        plt.figure(figsize=(10, 4))
-        plt.subplot(1, 2, 1)
+        
+        # (a) Pole zero
+        plt.figure(figsize=(6, 6))
         plt.scatter(np.real(z), np.imag(z), marker='o', color='blue', label='Zeros')
         plt.scatter(np.real(p), np.imag(p), marker='x', color='red', label='Poles')
-        circle = plt.Circle((0, 0), 1, color='gray', fill=False, linestyle='--')
-        plt.gca().add_patch(circle)
-        plt.title(f'{name} Pole-Zero')
-        plt.xlabel('Real')
-        plt.ylabel('Imaginary')
-        plt.axis('equal')
+        plt.gca().add_patch(plt.Circle((0,0), 1, color='gray', fill=False, linestyle='--'))
+        plt.title(f"{name} Pole-Zero Plot")
+        plt.xlabel("Real")
+        plt.ylabel("Imaginary")
         plt.xlim([-1.5, 1.5])
         plt.ylim([-1.5, 1.5])
-        plt.grid()
+        plt.grid(True)
         plt.legend()
+        plt.savefig(os.path.join(out_dir, f'lab02_fig_pz_{name}.png'), dpi=150, bbox_inches='tight')
+        plt.close('all')
         
-        # 2. Impulse response
-        n_impulse = 50 if len(p) > 0 else len(b) + 10
+        # (b) Impulse response
+        n_impulse = 60 if len(p) > 0 else len(b) + 10
         impulse = np.zeros(n_impulse)
         impulse[0] = 1
         h_imp = signal.lfilter(b, a, impulse)
         
-        plt.subplot(1, 2, 2)
+        plt.figure(figsize=(8, 4))
         plt.stem(np.arange(n_impulse), h_imp)
-        plt.title(f'{name} Impulse Response')
-        plt.grid()
-        plt.tight_layout()
-        plt.savefig(f'plots/{filename_prefix}_pz_imp.png')
-        plt.close()
+        plt.title(f"{name} Impulse Response")
+        plt.xlabel("n")
+        plt.ylabel("h[n]")
+        plt.grid(True)
+        plt.savefig(os.path.join(out_dir, f'lab02_fig_impulse_{name}.png'), dpi=150, bbox_inches='tight')
+        plt.close('all')
         
-        # 3. Frequency responses
+        # (c) Gain response
         plt.figure(figsize=(10, 8))
+        plt.subplot(2, 1, 1)
+        plt.plot(w, np.abs(h))
+        plt.axvline(wp_analog/(2*math.pi), color='g', linestyle='--', label='fp')
+        plt.axvline(ws_analog/(2*math.pi), color='r', linestyle='--', label='fs')
+        plt.title(f"{name} Gain Response (Linear)")
+        plt.xlabel("Frequency (Hz)")
+        plt.ylabel("Magnitude")
+        plt.grid(True)
+        plt.legend()
         
-        plt.subplot(3, 1, 1)
-        plt.plot(w, mag)
-        plt.title(f'{name} Gain Response')
-        plt.ylabel('Magnitude (dB)')
-        plt.grid()
-        
-        plt.subplot(3, 1, 2)
-        plt.plot(w, phase)
-        plt.title(f'{name} Phase Response')
-        plt.ylabel('Phase (radians)')
-        plt.grid()
-        
-        plt.subplot(3, 1, 3)
-        w_gd, gd = signal.group_delay((b, a), w=8000, fs=Fs)
-        plt.plot(w_gd, gd)
-        plt.title(f'{name} Group Delay')
-        plt.xlabel('Frequency (Hz)')
-        plt.ylabel('Samples')
-        plt.grid()
-        
+        plt.subplot(2, 1, 2)
+        plt.plot(w, 20*np.log10(np.abs(h)+1e-12))
+        plt.axvline(wp_analog/(2*math.pi), color='g', linestyle='--')
+        plt.axvline(ws_analog/(2*math.pi), color='r', linestyle='--')
+        plt.axhline(20*math.log10(delta_p), color='g', linestyle=':')
+        plt.axhline(20*math.log10(delta_s), color='r', linestyle=':')
+        plt.title(f"{name} Gain Response (dB)")
+        plt.xlabel("Frequency (Hz)")
+        plt.ylabel("Magnitude (dB)")
+        plt.grid(True)
         plt.tight_layout()
-        plt.savefig(f'plots/{filename_prefix}_freq.png')
-        plt.close()
-
-    # Create Filters
-    filters = {}
-    
-    # IIR
-    filters['Butterworth'] = signal.butter(N_butt, Wn_butt, btype='low', analog=False, fs=Fs)
-    filters['Chebyshev_I'] = signal.cheby1(N_cheb1, Rp, Wn_cheb1, btype='low', analog=False, fs=Fs)
-    filters['Chebyshev_II'] = signal.cheby2(N_cheb2, Rs, Wn_cheb2, btype='low', analog=False, fs=Fs)
-    
-    # FIR cutoff frequency
-    f_c = (f_p + f_s) / 2
-    
-    filters['Boxcar'] = (signal.firwin(N_rect, f_c, window='boxcar', fs=Fs), [1.0])
-    filters['Bartlett'] = (signal.firwin(N_bart, f_c, window='bartlett', fs=Fs), [1.0])
-    filters['Hann'] = (signal.firwin(N_hann, f_c, window='hann', fs=Fs), [1.0])
-    filters['Hamming'] = (signal.firwin(N_hamm, f_c, window='hamming', fs=Fs), [1.0])
-    filters['Blackman'] = (signal.firwin(N_blck, f_c, window='blackman', fs=Fs), [1.0])
-    
-    # Plot Filter Characteristics
-    for name, (b, a) in filters.items():
-        plot_filter_responses(b, a, name.replace('_', ' '), name.lower())
+        plt.savefig(os.path.join(out_dir, f'lab02_fig_gain_{name}.png'), dpi=150, bbox_inches='tight')
+        plt.close('all')
         
-    print("\nGenerated filter plots.")
+        # (d) Phase response
+        plt.figure(figsize=(8, 4))
+        plt.plot(w, np.unwrap(np.angle(h)))
+        plt.title(f"{name} Phase Response")
+        plt.xlabel("Frequency (Hz)")
+        plt.ylabel("Phase (radians)")
+        plt.grid(True)
+        plt.savefig(os.path.join(out_dir, f'lab02_fig_phase_{name}.png'), dpi=150, bbox_inches='tight')
+        plt.close('all')
         
-    np.random.seed(42)
-    t = np.arange(0, 1000) / Fs # 1 second
-    noise = np.random.randn(len(t)) # Unit power
-    
-    # Chirp: x(t) = sin(2*pi*t^2 / 100) -> 0 to 100s
-    t_chirp = np.arange(0, 100*Fs) / Fs
-    chirp = np.sin(2 * np.pi * t_chirp**2 / 100)
-    
-    for name, (b, a) in filters.items():
-        y_noise = signal.lfilter(b, a, noise)
+        # (e) Group delay
+        w_gd, gd = signal.group_delay((b, a), w=8000, fs=Fs)
+        plt.figure(figsize=(8, 4))
+        plt.plot(w_gd, gd)
+        plt.title(f"{name} Group Delay")
+        plt.xlabel("Frequency (Hz)")
+        plt.ylabel("Group Delay (samples)")
+        plt.grid(True)
+        plt.savefig(os.path.join(out_dir, f'lab02_fig_gd_{name}.png'), dpi=150, bbox_inches='tight')
+        plt.close('all')
+        
+        # Input Tasks
+        # Noise
+        np.random.seed(42)
+        x_noise = np.random.randn(1000)
+        y_noise = signal.lfilter(b, a, x_noise)
         
         Y_noise = np.fft.fft(y_noise)
         f_noise = np.fft.fftfreq(len(y_noise), 1/Fs)
         pos = f_noise >= 0
         
-        f_psd, Pxx = signal.periodogram(y_noise, Fs)
+        # PSD = fft(xcorr(y, y))
+        rxx_y = signal.correlate(y_noise, y_noise, mode='full')
+        psd_y = np.abs(np.fft.fft(np.fft.ifftshift(rxx_y/len(y_noise))))
+        f_psd = np.fft.fftfreq(len(rxx_y), 1/Fs)
+        pos_psd = f_psd >= 0
         
         plt.figure(figsize=(10, 8))
         plt.subplot(3, 1, 1)
-        plt.plot(t, y_noise)
-        plt.title(f'{name.replace("_", " ")} Filtered White Noise')
-        
+        plt.plot(np.arange(1000)/Fs, y_noise)
+        plt.title(f"{name} Filtered Noise (Time)")
         plt.subplot(3, 1, 2)
         plt.plot(f_noise[pos], np.abs(Y_noise[pos]))
-        plt.title('DFT Spectrum')
-        
+        plt.title(f"{name} Filtered Noise (DFT Magnitude)")
         plt.subplot(3, 1, 3)
-        plt.semilogy(f_psd, Pxx)
-        plt.title('Power Spectrum')
-        plt.xlabel('Frequency (Hz)')
-        
+        plt.semilogy(f_psd[pos_psd], psd_y[pos_psd])
+        plt.title(f"{name} Filtered Noise (Power Spectrum)")
         plt.tight_layout()
-        plt.savefig(f'plots/{name.lower()}_noise.png')
-        plt.close()
+        plt.savefig(os.path.join(out_dir, f'lab02_noise_{name}.png'), dpi=150, bbox_inches='tight')
+        plt.close('all')
         
         # Chirp
-        y_chirp = signal.lfilter(b, a, chirp)
-        f_sft, t_sft, Zxx = signal.spectrogram(y_chirp, fs=Fs, nperseg=256)
+        t_chirp = np.arange(0, 100*Fs) / Fs
+        # 0 to 100s, freq goes 0 to 2Hz, correctly mapped linearly using instantaneous frequency = t/50
+        x_chirp = np.sin(2 * np.pi * t_chirp**2 / 100)
+        y_chirp = signal.lfilter(b, a, x_chirp)
+        
+        freqs, times, Sxx = signal.spectrogram(y_chirp, fs=Fs, nperseg=256)
         
         plt.figure(figsize=(10, 8))
         plt.subplot(2, 1, 1)
-        plt.plot(t_chirp[:5000], y_chirp[:5000]) # Zoomed in
-        plt.title(f'{name.replace("_", " ")} Filtered Chirp (First 5s)')
-        
+        plt.plot(t_chirp, y_chirp)
+        plt.title(f"{name} Filtered Chirp (Time)")
         plt.subplot(2, 1, 2)
-        plt.pcolormesh(t_sft, f_sft, 10 * np.log10(np.abs(Zxx)+1e-10), shading='gouraud')
-        plt.title('Spectrogram')
-        plt.xlabel('Time (s)')
+        plt.pcolormesh(times, freqs, 10 * np.log10(Sxx + 1e-10), shading='gouraud')
+        plt.title(f"{name} Filtered Chirp (Spectrogram)")
         plt.ylabel('Frequency (Hz)')
-        
+        plt.xlabel('Time (s)')
+        # Limit axis to focus on low freq band up to 10Hz
+        plt.ylim([0, 10])
         plt.tight_layout()
-        plt.savefig(f'plots/{name.lower()}_chirp.png')
-        plt.close()
-        
-    print("Generated noise and chirp plots.")
+        plt.savefig(os.path.join(out_dir, f'lab02_chirp_{name}.png'), dpi=150, bbox_inches='tight')
+        plt.close('all')
 
 if __name__ == '__main__':
     run_lab2()

@@ -2,8 +2,8 @@ This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
-**./lab01_report.tex
-(lab01_report.tex
+**./lab02_report.tex
+(lab02_report.tex
 LaTeX2e <2025-11-01>
 L3 programming layer <2025-12-24>
 (IEEEtran.cls
@@ -285,46 +285,66 @@ Package: listings 2025/11/14 1.11b (Carsten Heinz)
     but found:
         2025/11/14 1.11b (Carsten Heinz)
     so I'm assuming it got fixed.
+(C:\Users\26785\AppData\Local\Programs\MiKTeX\tex/latex/booktabs\booktabs.sty
+Package: booktabs 2020/01/12 v1.61803398 Publication quality tables
+\heavyrulewidth=\dimen187
+\lightrulewidth=\dimen188
+\cmidrulewidth=\dimen189
+\belowrulesep=\dimen190
+\belowbottomsep=\dimen191
+\aboverulesep=\dimen192
+\abovetopsep=\dimen193
+\cmidrulesep=\dimen194
+\cmidrulekern=\dimen195
+\defaultaddspace=\dimen196
+\@cmidla=\count314
+\@cmidlb=\count315
+\@aboverulesep=\dimen197
+\@belowrulesep=\dimen198
+\@thisruleclass=\count316
+\@lastruleclass=\count317
+\@thisrulewidth=\dimen199
+)
 (C:\Users\26785\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstlang1.sty
 File: lstlang1.sty 2025/11/14 1.11b listings language file
 )
 (C:\Users\26785\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend-pdf
 tex.def
 File: l3backend-pdftex.def 2025-10-09 L3 backend support: PDF output (pdfTeX)
-\l__color_backend_stack_int=\count314
-) (lab01_report.aux)
-\openout1 = `lab01_report.aux'.
+\l__color_backend_stack_int=\count318
+) (lab02_report.aux)
+\openout1 = `lab02_report.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 29.
-LaTeX Font Info:    ... okay on input line 29.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 29.
-LaTeX Font Info:    ... okay on input line 29.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 29.
-LaTeX Font Info:    ... okay on input line 29.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 29.
-LaTeX Font Info:    ... okay on input line 29.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 29.
-LaTeX Font Info:    ... okay on input line 29.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 29.
-LaTeX Font Info:    ... okay on input line 29.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 29.
-LaTeX Font Info:    ... okay on input line 29.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 30.
+LaTeX Font Info:    ... okay on input line 30.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 30.
+LaTeX Font Info:    ... okay on input line 30.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 30.
+LaTeX Font Info:    ... okay on input line 30.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 30.
+LaTeX Font Info:    ... okay on input line 30.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 30.
+LaTeX Font Info:    ... okay on input line 30.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 30.
+LaTeX Font Info:    ... okay on input line 30.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 30.
+LaTeX Font Info:    ... okay on input line 30.
 
 -- Lines per column: 56 (exact).
 
 (C:\Users\26785\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.mk
 ii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count315
-\scratchdimen=\dimen187
+\scratchcounter=\count319
+\scratchdimen=\dimen256
 \scratchbox=\box59
-\nofMPsegments=\count316
-\nofMParguments=\count317
+\nofMPsegments=\count320
+\nofMParguments=\count321
 \everyMPshowfont=\toks25
-\MPscratchCnt=\count318
-\MPscratchDim=\dimen188
-\MPnumerator=\count319
-\makeMPintoPDFobject=\count320
+\MPscratchCnt=\count322
+\MPscratchDim=\dimen257
+\MPnumerator=\count323
+\makeMPintoPDFobject=\count324
 \everyMPtoPDFconversion=\toks26
 )
 (C:\Users\26785\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstopdf-b
@@ -337,86 +357,70 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 fg
 File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
 ))
-\c@lstlisting=\count321
-LaTeX Font Info:    Trying to load font information for U+msa on input line 43.
+\c@lstlisting=\count325
+LaTeX Font Info:    Trying to load font information for U+msa on input line 56.
 
  (C:\Users\26785\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 43.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 56.
 
 
 (C:\Users\26785\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-Underfull \hbox (badness 2435) in paragraph at lines 46--48
-\OT1/ptm/b/n/9 arenko Har-monic De-com-po-si-tion, Au-tore-gres-sive Mod-el-ing
-,
- []
-
-<plots/task2.png, id=1, 867.24pt x 578.16pt>
-File: plots/task2.png Graphic file (type png)
-<use plots/task2.png>
-Package pdftex.def Info: plots/task2.png  used on input line 75.
-(pdftex.def)             Requested size: 232.19843pt x 154.7908pt.
-<plots/task3.png, id=3, 722.7pt x 433.62pt>
-File: plots/task3.png Graphic file (type png)
-<use plots/task3.png>
-Package pdftex.def Info: plots/task3.png  used on input line 84.
-(pdftex.def)             Requested size: 232.19843pt x 139.31702pt.
-<plots/task4.png, id=4, 722.7pt x 578.16pt>
-File: plots/task4.png Graphic file (type png)
-<use plots/task4.png>
-Package pdftex.def Info: plots/task4.png  used on input line 91.
-(pdftex.def)             Requested size: 232.19843pt x 185.75603pt.
 [1{C:/Users/26785/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/26
 785/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/base/8r.enc}
 
 
 ]
-<plots/task5.png, id=21, 722.7pt x 433.62pt>
-File: plots/task5.png Graphic file (type png)
-<use plots/task5.png>
-Package pdftex.def Info: plots/task5.png  used on input line 101.
-(pdftex.def)             Requested size: 232.19843pt x 139.31702pt.
-<plots/task6.png, id=22, 722.7pt x 289.08pt>
-File: plots/task6.png Graphic file (type png)
-<use plots/task6.png>
-Package pdftex.def Info: plots/task6.png  used on input line 108.
+<plots/butterworth_pz_imp.png, id=18, 722.7pt x 289.08pt>
+File: plots/butterworth_pz_imp.png Graphic file (type png)
+<use plots/butterworth_pz_imp.png>
+Package pdftex.def Info: plots/butterworth_pz_imp.png  used on input line 97.
 (pdftex.def)             Requested size: 232.19843pt x 92.878pt.
-<plots/task7.png, id=23, 722.7pt x 433.62pt>
-File: plots/task7.png Graphic file (type png)
-<use plots/task7.png>
-Package pdftex.def Info: plots/task7.png  used on input line 118.
-(pdftex.def)             Requested size: 232.19843pt x 139.31702pt.
-<plots/task9.png, id=24, 722.7pt x 289.08pt>
-File: plots/task9.png Graphic file (type png)
-<use plots/task9.png>
-Package pdftex.def Info: plots/task9.png  used on input line 128.
+<plots/hann_pz_imp.png, id=20, 722.7pt x 289.08pt>
+File: plots/hann_pz_imp.png Graphic file (type png)
+<use plots/hann_pz_imp.png>
+Package pdftex.def Info: plots/hann_pz_imp.png  used on input line 104.
 (pdftex.def)             Requested size: 232.19843pt x 92.878pt.
-<plots/task10.png, id=25, 722.7pt x 289.08pt>
-File: plots/task10.png Graphic file (type png)
-<use plots/task10.png>
-Package pdftex.def Info: plots/task10.png  used on input line 135.
-(pdftex.def)             Requested size: 232.19843pt x 92.878pt.
- [2 <./plots/task2.png> <./plots/task3.png> <./plots/task4.png> <./plots/task5.
-png> <./plots/task6.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 154--155
+<plots/chebyshev_i_freq.png, id=21, 722.7pt x 578.16pt>
+File: plots/chebyshev_i_freq.png Graphic file (type png)
+<use plots/chebyshev_i_freq.png>
+Package pdftex.def Info: plots/chebyshev_i_freq.png  used on input line 111.
+(pdftex.def)             Requested size: 232.19843pt x 185.75603pt.
+<plots/hamming_freq.png, id=22, 722.7pt x 578.16pt>
+File: plots/hamming_freq.png Graphic file (type png)
+<use plots/hamming_freq.png>
+Package pdftex.def Info: plots/hamming_freq.png  used on input line 118.
+(pdftex.def)             Requested size: 232.19843pt x 185.75603pt.
+<plots/chebyshev_ii_noise.png, id=23, 722.7pt x 578.16pt>
+File: plots/chebyshev_ii_noise.png Graphic file (type png)
+<use plots/chebyshev_ii_noise.png>
+Package pdftex.def Info: plots/chebyshev_ii_noise.png  used on input line 128.
+(pdftex.def)             Requested size: 232.19843pt x 185.75603pt.
+<plots/blackman_chirp.png, id=24, 722.7pt x 578.16pt>
+File: plots/blackman_chirp.png Graphic file (type png)
+<use plots/blackman_chirp.png>
+Package pdftex.def Info: plots/blackman_chirp.png  used on input line 135.
+(pdftex.def)             Requested size: 232.19843pt x 185.75603pt.
+ [2 <./plots/butterworth_pz_imp.png> <./plots/hann_pz_imp.png> <./plots/chebysh
+ev_i_freq.png> <./plots/hamming_freq.png> <./plots/chebyshev_ii_noise.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 153--154
 []\OT1/ptm/m/n/8 The Math-Works, Inc., "Sig-nal Pro-cess-ing Tool-box User's
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 154--155
+Underfull \hbox (badness 10000) in paragraph at lines 153--154
 \OT1/ptm/m/n/8 Guide," Nat-ick, MA: Math-Works, 2023. [On-line]. Avail-able:
  []
 
-** WARNING: Ignoring useless \section in Appendix (line 158).
+** WARNING: Ignoring useless \section in Appendix (line 157).
 LaTeX Font Info:    Trying to load font information for OT1+pcr on input line 1
-62.
+61.
 (C:\Users\26785\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\ot1pcr.fd
 File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
 )
-[3 <./plots/task7.png> <./plots/task9.png> <./plots/task10.png>]
 
 ** Conference Paper **
 Before submitting the final camera ready copy, remember to:
@@ -428,40 +432,40 @@ Before submitting the final camera ready copy, remember to:
  uses only Type 1 fonts and that every step in the generation
  process uses the appropriate paper size.
 
-[4
-
-] (lab01_report.aux)
+[3 <./plots/blackman_chirp.png>] (lab02_report.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2025-12-24>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 6013 strings out of 467871
- 90660 string characters out of 5418376
- 943200 words of memory out of 5000000
- 34840 multiletter control sequences out of 15000+600000
- 665349 words of font info for 115 fonts, out of 8000000 for 9000
+ 6074 strings out of 467871
+ 92046 string characters out of 5418376
+ 970439 words of memory out of 5000000
+ 34895 multiletter control sequences out of 15000+600000
+ 668178 words of font info for 118 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 57i,8n,65p,1220b,1655s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 57i,9n,65p,997b,1260s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/26785/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/
 cmex10.pfb><C:/Users/26785/AppData/Local/Programs/MiKTeX/fonts/type1/public/ams
 fonts/cm/cmmi10.pfb><C:/Users/26785/AppData/Local/Programs/MiKTeX/fonts/type1/p
-ublic/amsfonts/cm/cmmi7.pfb><C:/Users/26785/AppData/Local/Programs/MiKTeX/fonts
-/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/26785/AppData/Local/Programs/MiKT
-eX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/26785/AppData/Local/Progra
-ms/MiKTeX/fonts/type1/public/amsfonts/cm/cmr9.pfb><C:/Users/26785/AppData/Local
-/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/26785/AppD
-ata/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy9.pfb><C:/Users/26
-785/AppData/Local/Programs/MiKTeX/fonts/type1/urw/courier/ucrb8a.pfb><C:/Users/
-26785/AppData/Local/Programs/MiKTeX/fonts/type1/urw/courier/ucrr8a.pfb><C:/User
-s/26785/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmb8a.pfb><C:/User
-s/26785/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmbi8a.pfb><C:/Use
-rs/26785/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmr8a.pfb><C:/Use
-rs/26785/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmri8a.pfb>
-Output written on lab01_report.pdf (4 pages, 1721424 bytes).
+ublic/amsfonts/cm/cmmi5.pfb><C:/Users/26785/AppData/Local/Programs/MiKTeX/fonts
+/type1/public/amsfonts/cm/cmmi7.pfb><C:/Users/26785/AppData/Local/Programs/MiKT
+eX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/26785/AppData/Local/Progr
+ams/MiKTeX/fonts/type1/public/amsfonts/cm/cmr5.pfb><C:/Users/26785/AppData/Loca
+l/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/26785/AppDa
+ta/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/26
+785/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/
+Users/26785/AppData/Local/Programs/MiKTeX/fonts/type1/urw/courier/ucrb8a.pfb><C
+:/Users/26785/AppData/Local/Programs/MiKTeX/fonts/type1/urw/courier/ucrr8a.pfb>
+<C:/Users/26785/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmb8a.pfb>
+<C:/Users/26785/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmbi8a.pfb
+><C:/Users/26785/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmr8a.pfb
+><C:/Users/26785/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmri8a.pf
+b>
+Output written on lab02_report.pdf (3 pages, 715295 bytes).
 PDF statistics:
- 103 PDF objects out of 1000 (max. 8388607)
+ 101 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
- 41 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 31 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -1,261 +1,252 @@
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import scipy.signal as signal
-from scipy.linalg import toeplitz, eigh
+from scipy.linalg import toeplitz, eigh, lstsq
 import os
-import math
 
 def run_lab1():
-    if not os.path.exists('plots'):
-        os.makedirs('plots')
-
-    # Seed for reproducibility
+    out_dir = '.' # Working in outputs directory
+    
     np.random.seed(42)
+    # Student parameters: a=2, b=9, c=1
+    f1, f2, f3 = 12, 39, 71
+    Fs = 200
+    # duration 0 <= t <= 100. Fs=200 -> N = 20000 or 20001
+    t = np.arange(0, int(100*Fs)) / Fs
+    N = len(t)
+    
+    nu = np.random.randn(N) # N(0, 1)
 
-    # Paramters
-    # E/21/291 -> a=2, b=9, c=1
-    a, b, c = 2, 9, 1
-    f1, f2, f3 = 10 + a, 30 + b, 70 + c
-    print(f"Frequencies (Hz): f1={f1}, f2={f2}, f3={f3}")
-
-    Fs = 200 # Hz
-    T_end = 100 # seconds
-    # Number of points is 100*Fs
-    t = np.arange(0, int(T_end*Fs)) / Fs # 0 to 99.995, length 20000
-
-    nu = np.random.normal(0, 1, len(t))
-
-    # --- Task 1: Construct Signals ---
+    # --- Signal Construction ---
     x1 = np.sin(2 * np.pi * f1 * t) + np.cos(2 * np.pi * f2 * t) + np.sin(2 * np.pi * f3 * t) + nu
     x2 = np.sin(20 * np.pi * t + 2 * np.pi * (t**2 / 150)) + nu
 
-    # --- Task 2: Plot time domain & histograms ---
-    plt.figure(figsize=(12, 8))
-    
-    plt.subplot(2, 2, 1)
-    # Plotting only first 1 second so it's visible
-    plt.plot(t[:200], x1[:200])
-    plt.title("Signal 1 - Time Domain (First 1s)")
+    # --- Task 1: Time domain plots ---
+    plt.figure(figsize=(10, 6))
+    plt.subplot(2, 1, 1)
+    # 2 seconds = 400 samples
+    idx2s = 400
+    plt.plot(t[:idx2s], x1[:idx2s])
+    plt.title("Signal 1 - Time Domain (First 2s)")
     plt.xlabel("Time (s)")
     plt.ylabel("Amplitude")
+    plt.grid(True)
+    
+    plt.subplot(2, 1, 2)
+    plt.plot(t[:idx2s], x2[:idx2s])
+    plt.title("Signal 2 - Time Domain (First 2s)")
+    plt.xlabel("Time (s)")
+    plt.ylabel("Amplitude")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(os.path.join(out_dir, 'lab01_fig01_signals.png'), dpi=150, bbox_inches='tight')
+    plt.close('all')
 
-    plt.subplot(2, 2, 2)
+    # Histograms
+    plt.figure(figsize=(10, 6))
+    plt.subplot(2, 1, 1)
     plt.hist(x1, bins=50, color='skyblue', edgecolor='black')
     plt.title("Signal 1 - Histogram")
     plt.xlabel("Amplitude")
     plt.ylabel("Count")
-
-    plt.subplot(2, 2, 3)
-    plt.plot(t[:200], x2[:200])
-    plt.title("Signal 2 - Time Domain (First 1s)")
-    plt.xlabel("Time (s)")
-    plt.ylabel("Amplitude")
-
-    plt.subplot(2, 2, 4)
+    
+    plt.subplot(2, 1, 2)
     plt.hist(x2, bins=50, color='lightgreen', edgecolor='black')
     plt.title("Signal 2 - Histogram")
     plt.xlabel("Amplitude")
     plt.ylabel("Count")
-
     plt.tight_layout()
-    plt.savefig('plots/task2.png')
-    plt.close()
+    plt.savefig(os.path.join(out_dir, 'lab01_fig02_histograms.png'), dpi=150, bbox_inches='tight')
+    plt.close('all')
 
-    # --- Task 3: DFT Spectra ---
-    X1 = np.fft.fft(x1)
-    X2 = np.fft.fft(x2)
-    f_xf = np.fft.fftfreq(len(t), d=1/Fs)
+    # --- Task 2/3: DFT ---
+    from scipy.fft import fft, fftfreq
+    X1 = fft(x1)
+    X2 = fft(x2)
+    f_xf = fftfreq(N, d=1/Fs)
+    pos_idx = f_xf >= 0
     
-    # Consider only positive frequencies
-    pos_idx = np.where(f_xf >= 0)
-    
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(10, 8))
     plt.subplot(2, 1, 1)
     plt.plot(f_xf[pos_idx], np.abs(X1[pos_idx]))
-    plt.title("DFT Spectrum of Signal 1")
-    plt.ylabel("Magnitude")
+    plt.title("DFT Magnitude Spectrum of Signal 1")
+    plt.xlabel("Frequency (Hz)")
+    plt.ylabel("|X1[k]|")
     plt.grid(True)
     
     plt.subplot(2, 1, 2)
     plt.plot(f_xf[pos_idx], np.abs(X2[pos_idx]))
-    plt.title("DFT Spectrum of Signal 2")
+    plt.title("DFT Magnitude Spectrum of Signal 2")
     plt.xlabel("Frequency (Hz)")
-    plt.ylabel("Magnitude")
+    plt.ylabel("|X2[k]|")
     plt.grid(True)
-    
     plt.tight_layout()
-    plt.savefig('plots/task3.png')
-    plt.close()
+    plt.savefig(os.path.join(out_dir, 'lab01_fig03_dft.png'), dpi=150, bbox_inches='tight')
+    plt.close('all')
 
-    # Find peaks for Signal 1
-    peaks_idx, _ = signal.find_peaks(np.abs(X1[pos_idx]), height=len(t)/4)
-    freqs_dft = f_xf[pos_idx][peaks_idx]
-    print(f"Task 3 - Estimated Frequencies for Signal 1 from DFT: {freqs_dft} Hz")
-
-    # --- Task 4: Spectrograms ---
-    f_stft1, t_stft1, Zxx1 = signal.spectrogram(x1, fs=Fs, nperseg=256)
-    f_stft2, t_stft2, Zxx2 = signal.spectrogram(x2, fs=Fs, nperseg=256)
+    # --- Task 3/4: Spectrogram ---
+    f_stft1, t_stft1, Zxx1 = signal.spectrogram(x1, fs=Fs, nperseg=512, noverlap=256)
+    f_stft2, t_stft2, Zxx2 = signal.spectrogram(x2, fs=Fs, nperseg=512, noverlap=256)
 
     plt.figure(figsize=(10, 8))
     plt.subplot(2, 1, 1)
-    plt.pcolormesh(t_stft1, f_stft1, 10 * np.log10(Zxx1), shading='gouraud')
+    plt.pcolormesh(t_stft1, f_stft1, 10 * np.log10(Zxx1 + 1e-10), shading='gouraud')
     plt.title("Spectrogram of Signal 1")
     plt.ylabel("Frequency (Hz)")
     
     plt.subplot(2, 1, 2)
-    plt.pcolormesh(t_stft2, f_stft2, 10 * np.log10(Zxx2), shading='gouraud')
-    plt.title("Spectrogram of Signal 2 (Chirp)")
+    plt.pcolormesh(t_stft2, f_stft2, 10 * np.log10(Zxx2 + 1e-10), shading='gouraud')
+    plt.title("Spectrogram of Signal 2")
     plt.ylabel("Frequency (Hz)")
     plt.xlabel("Time (sec)")
-    
     plt.tight_layout()
-    plt.savefig('plots/task4.png')
-    plt.close()
+    plt.savefig(os.path.join(out_dir, 'lab01_fig04_spectrogram.png'), dpi=150, bbox_inches='tight')
+    plt.close('all')
 
-    # --- Task 5: Autocorrelation of Signal 1 ---
-    # Implement both Built-in (biased implicitly if directly used) and Power-Signal (unbiased formula)
+    # --- Task 5: Autocorrelation Signal 1 ---
+    # Built-in
     rxx1_raw = signal.correlate(x1, x1, mode='full')
-    lags = signal.correlation_lags(len(x1), len(x1))
+    lags = signal.correlation_lags(N, N)
+    rxx1_builtin = rxx1_raw / N
     
-    N = len(x1)
-    # The Power-Signal Approximation formula (Unbiased estimator) is division by (N - |l|)
-    rxx1_unbiased = rxx1_raw / (N - np.abs(lags))
-    # Built-in equivalent estimator (usually Biased estimator is divide by N)
-    rxx1_biased = rxx1_raw / N
+    # Power signal approximation
+    R = np.zeros(N)
+    for ell in range(N):
+        R[ell] = (1.0/(N-ell)) * np.sum(x1[0:N-ell] * x1[ell:N])
+    rxx1_power = np.concatenate((np.flip(R[1:]), R))
     
-    center = len(rxx1_biased) // 2
-    max_lag = int(3 * Fs) # Up to 3 seconds for fundamental period lookup
+    center = len(rxx1_builtin) // 2
+    max_lag = int(3 * Fs) # look at roughly 3 seconds
     
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(10, 8))
     plt.subplot(2, 1, 1)
-    plt.plot(lags[center:center+max_lag]/Fs, rxx1_biased[center:center+max_lag])
-    plt.title("Autocorrelation of Signal 1 (Biased)")
+    plt.plot(lags[center:center+max_lag]/Fs, rxx1_builtin[center:center+max_lag])
+    plt.title("Autocorrelation of Signal 1 (Built-in, length-N normalization)")
+    plt.xlabel("Lag (s)")
     plt.ylabel("R_xx")
     plt.grid(True)
     
     plt.subplot(2, 1, 2)
-    plt.plot(lags[center:center+max_lag]/Fs, rxx1_unbiased[center:center+max_lag])
-    plt.title("Autocorrelation of Signal 1 (Unbiased Power-Signal Approx)")
+    plt.plot(lags[center:center+max_lag]/Fs, rxx1_power[center:center+max_lag])
+    plt.title("Autocorrelation of Signal 1 (Power-Signal Approximation)")
     plt.xlabel("Lag (s)")
     plt.ylabel("R_xx")
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig('plots/task5.png')
-    plt.close()
-    
-    print("Task 5 - Based on GCD(12, 39, 71)=1 Hz, expected fundamental period is 1 second.")
+    plt.savefig(os.path.join(out_dir, 'lab01_fig05_autocorr_s1.png'), dpi=150, bbox_inches='tight')
+    plt.close('all')
 
-    # --- Task 6: Autocorrelation of Signal 2 ---
+    # --- Task 6: Autocorrelation Signal 2 ---
     rxx2_raw = signal.correlate(x2, x2, mode='full')
-    rxx2_unbiased = rxx2_raw / (len(x2) - np.abs(lags))
+    rxx2_builtin = rxx2_raw / N
     
-    plt.figure(figsize=(10, 4))
-    plt.plot(lags[center:center+max_lag]/Fs, rxx2_unbiased[center:center+max_lag])
-    plt.title("Autocorrelation of Signal 2 (Unbiased)")
+    R2 = np.zeros(N)
+    for ell in range(N):
+        R2[ell] = (1.0/(N-ell)) * np.sum(x2[0:N-ell] * x2[ell:N])
+    rxx2_power = np.concatenate((np.flip(R2[1:]), R2))
+    
+    plt.figure(figsize=(10, 8))
+    plt.subplot(2, 1, 1)
+    plt.plot(lags[center:center+max_lag]/Fs, rxx2_builtin[center:center+max_lag])
+    plt.title("Autocorrelation of Signal 2 (Built-in)")
+    plt.xlabel("Lag (s)")
+    plt.ylabel("R_xx")
+    plt.grid(True)
+    
+    plt.subplot(2, 1, 2)
+    plt.plot(lags[center:center+max_lag]/Fs, rxx2_power[center:center+max_lag])
+    plt.title("Autocorrelation of Signal 2 (Power-Signal Approximation)")
     plt.xlabel("Lag (s)")
     plt.ylabel("R_xx")
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig('plots/task6.png')
-    plt.close()
+    plt.savefig(os.path.join(out_dir, 'lab01_fig06_autocorr_s2.png'), dpi=150, bbox_inches='tight')
+    plt.close('all')
 
-    # --- Task 7: Periodograms ---
-    # Instruction specifies implementation as "DFT of xcorr result"
-    # To compute DFT of the full symmetric ACF (biased estimator) properly centered:
-    Pxx_den1_custom = np.abs(np.fft.fft(np.fft.ifftshift(rxx1_biased)))
-    f_p1_custom = np.fft.fftfreq(len(rxx1_biased), 1/Fs)
-    # Filter positive frequencies
-    pos_p1 = f_p1_custom >= 0
-
-    rxx2_biased = rxx2_raw / len(x2)
-    Pxx_den2_custom = np.abs(np.fft.fft(np.fft.ifftshift(rxx2_biased)))
+    # --- Task 7: Periodogram ---
+    Pxx1 = np.abs(fft(np.fft.ifftshift(rxx1_builtin)))
+    Pxx2 = np.abs(fft(np.fft.ifftshift(rxx2_builtin)))
+    f_p = fftfreq(len(rxx1_builtin), d=1/Fs)
+    pos_p = f_p >= 0
     
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(10, 8))
     plt.subplot(2, 1, 1)
-    # Using linear scale, not dB as requested
-    plt.plot(f_p1_custom[pos_p1], Pxx_den1_custom[pos_p1])
-    plt.title("Periodogram of Signal 1 (From DFT of ACF)")
-    plt.ylabel("PSD (Linear Scale)")
+    plt.plot(f_p[pos_p], Pxx1[pos_p]) # linear scale
+    plt.title("Periodogram of Signal 1 (from DFT of xcorr)")
+    plt.xlabel("Frequency (Hz)")
+    plt.ylabel("Power")
     plt.grid(True)
     
     plt.subplot(2, 1, 2)
-    plt.plot(f_p1_custom[pos_p1], Pxx_den2_custom[pos_p1])
-    plt.title("Periodogram of Signal 2 (From DFT of ACF)")
+    plt.plot(f_p[pos_p], Pxx2[pos_p])
+    plt.title("Periodogram of Signal 2 (from DFT of xcorr)")
     plt.xlabel("Frequency (Hz)")
-    plt.ylabel("PSD (Linear Scale)")
+    plt.ylabel("Power")
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig('plots/task7.png')
-    plt.close()
+    plt.savefig(os.path.join(out_dir, 'lab01_fig07_periodogram.png'), dpi=150, bbox_inches='tight')
+    plt.close('all')
 
-    # Find peaks for reporting
-    pg_peaks, _ = signal.find_peaks(Pxx_den1_custom[pos_p1], height=np.max(Pxx_den1_custom[pos_p1])/4)
-    print(f"Task 7 - Estimated Frequencies for Signal 1 from Periodogram: {f_p1_custom[pos_p1][pg_peaks]} Hz")
-
-    # --- Task 8 & 9: Pisarenko/MUSIC ---
-    print("Task 8 - PHD / MUSIC Decomposition")
-    print("Signal has K=3 tones, so p=2K=6 frequency components. ACM size must be 7x7 for PHD.")
-    M = 7
-    # Unbiased ACF segment for the matrix
-    r = rxx1_unbiased[center:center+M] 
-    R = toeplitz(r)
+    # --- Task 8: ACM Eigenvalues ---
+    p = 6
+    M = p + 1 # 7
+    r = rxx1_power[center:center+M]
+    R_mat = toeplitz(r)
+    eigenvalues, eigenvectors = eigh(R_mat)
     
-    eigenvalues, eigenvectors = eigh(R)
-    # Eigenvalues are sorted in ascending order.
-    # For PHD with p=6 and M=7, the noise subspace has dimension 1 (corresponding to min eigenvalue)
-    E_min = eigenvectors[:, 0]
-    
-    # Pseudo-spectrum is evaluated as |1 / V(e^jw)|^2
-    w_phd, h_phd = signal.freqz(E_min, 1, worN=1000, fs=Fs)
-    P_phd = 1.0 / (np.abs(h_phd)**2 + 1e-12)
-
-    plt.figure(figsize=(10, 4))
-    plt.plot(w_phd, 10*np.log10(P_phd))
-    plt.title("PHD Pseudo-spectrum of Signal 1 (M=7)")
-    plt.xlabel("Frequency (Hz)")
-    plt.ylabel("Pseudo-power (dB)")
+    plt.figure(figsize=(8, 6))
+    plt.plot(np.arange(1, M+1), eigenvalues, 'o-')
+    plt.title("Eigenvalues of the 7x7 Autocorrelation Matrix (Signal 1)")
+    plt.xlabel("Index")
+    plt.ylabel("Eigenvalue Magnitude")
     plt.grid(True)
-    plt.tight_layout()
-    plt.savefig('plots/task9.png')
-    plt.close()
+    plt.savefig(os.path.join(out_dir, 'lab01_fig08_acm_eigenvalues.png'), dpi=150, bbox_inches='tight')
+    plt.close('all')
+
+    # --- Task 9: MUSIC Pseudo-Spectrum ---
+    # Signal subspace has dimension 6, noise subspace has dimension 1 (N-p = 7-6 = 1)
+    E_noise = eigenvectors[:, 0] # smallest eigenvalue corresponds to noise subspace
     
-    phd_peaks, _ = signal.find_peaks(10*np.log10(P_phd), height=np.max(10*np.log10(P_phd))-30)
-    print(f"Task 9 - Estimated Frequencies for Signal 1 from PHD: {w_phd[phd_peaks]} Hz")
+    f_search = np.linspace(0, Fs/2, 2000)
+    P_music = np.zeros(len(f_search))
+    
+    for i, f_hz in enumerate(f_search):
+        omega = 2 * np.pi * f_hz / Fs
+        e_vec = np.exp(-1j * omega * np.arange(M))
+        P_music[i] = 1.0 / np.abs(np.vdot(E_noise, e_vec))**2
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(f_search, P_music)
+    plt.title("MUSIC Pseudo-Spectrum (Signal 1)")
+    plt.xlabel("Frequency (Hz)")
+    plt.ylabel("Pseudo-Power (Linear)")
+    plt.grid(True)
+    plt.savefig(os.path.join(out_dir, 'lab01_fig09_music.png'), dpi=150, bbox_inches='tight')
+    plt.close('all')
 
     # --- Task 10: AR Model ---
-    # Least-squares solution implicitly solving Theta = (A^T A)^-1 A^T b
-    p_ar = 10 # Order chosen suitably high
-    N_samples = len(x1)
-    
-    # Constructing data matrix A and observation vector b
-    A = np.zeros((N_samples - p_ar, p_ar))
-    b_vec = x1[p_ar:]
-    
+    p_ar = 10
+    A = np.zeros((N - p_ar, p_ar))
+    b = x1[p_ar:]
     for i in range(p_ar):
-        A[:, i] = x1[p_ar - 1 - i : N_samples - 1 - i]
-        
-    # Solve properly via Standard Least Squares Normal Equations
-    # Theta = inv(A^T @ A) @ A^T @ b
-    Theta = np.linalg.solve(A.T @ A, A.T @ b_vec)
+        A[:, i] = x1[p_ar - 1 - i : N - 1 - i]
     
-    # The estimated AR filter coefficients V(z)
+    Theta, _, _, _ = lstsq(A, b, rcond=None)
     a_ar = np.concatenate(([1], -Theta))
     
-    w_ar, h_ar = signal.freqz(1, a_ar, worN=1000, fs=Fs)
+    w_ar, h_ar = signal.freqz(1, a_ar, worN=2000, fs=Fs)
     P_ar = np.abs(h_ar)**2
     
-    plt.figure(figsize=(10, 4))
-    plt.plot(w_ar, 10*np.log10(P_ar))
-    plt.title(f"AR Model Spectrum of Signal 1 (Least Squares, p={p_ar})")
+    plt.figure(figsize=(10, 6))
+    plt.plot(w_ar, P_ar)
+    plt.title(f"AR Model Spectrum (Signal 1, Order N={p_ar})")
     plt.xlabel("Frequency (Hz)")
-    plt.ylabel("Magnitude (dB)")
+    plt.ylabel("Power (Linear)")
     plt.grid(True)
-    plt.tight_layout()
-    plt.savefig('plots/task10.png')
-    plt.close()
-    
-    ar_peaks, _ = signal.find_peaks(10*np.log10(P_ar), height=np.max(10*np.log10(P_ar))-20)
-    print(f"Task 10 - Estimated Frequencies for Signal 1 from AR model: {w_ar[ar_peaks]} Hz")
+    plt.savefig(os.path.join(out_dir, 'lab01_fig10_ar.png'), dpi=150, bbox_inches='tight')
+    plt.close('all')
 
 if __name__ == '__main__':
     run_lab1()

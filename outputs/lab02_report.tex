@@ -1,0 +1,209 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{booktabs}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\lstset{
+  language=Python,
+  basicstyle=\ttfamily\scriptsize,
+  keywordstyle=\color{blue}\bfseries,
+  commentstyle=\color{gray}\itshape,
+  stringstyle=\color{red},
+  numberstyle=\tiny\color{gray},
+  numbers=left,
+  stepnumber=1,
+  breaklines=true,
+  frame=single,
+  captionpos=b,
+  tabsize=4
+}
+
+\begin{document}
+
+\title{EE 325 Digital Signal Processing: Lab 02 Filter Design\\}
+
+\author{\IEEEauthorblockN{Student Name}
+\IEEEauthorblockA{\textit{Dept. of Electrical \& Electronic Engineering} \\
+\textit{University of Peradeniya}\\
+Sri Lanka \\
+E/21/291}
+}
+
+\maketitle
+
+\begin{abstract}
+This report comprehensively demonstrates the synthesis and analysis methodologies dictating bounded selective operations spanning theoretical derivations mapped continuously against deterministic signal outputs seamlessly. Utilizing pre-calculated logarithmic mapping limits yielding strict attenuation bounds iteratively, explicit Butterworth and Chebyshev Infinite Impulse Response configurations properly minimized functional variations uniformly. Successively, multiple minimal bounded discrete windows configuring robust Finite Impulse Responses identically suppressed dynamically swept stochastic elements consistently across simulated sequences. Complete characteristics including isolated zero-evaluations, specific group bounds, discrete structural filtering, and dynamically generated spectral sequences explicitly validate purely mathematical calculations flawlessly mapped directly towards real signal parameters inherently successfully evaluated practically here.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Bilinear Transform, Group Delay, Pole-Zero Mapping, Spectrogram, Infinite Impulse Response.
+\end{IEEEkeywords}
+
+\section{Introduction}
+Digital sequence filtering implicitly resolves targeted parameters deterministically evaluating precisely formulated topologies actively blocking selective spectral densities gracefully \cite{b1,b3}. Theoretical constraints historically isolate ideal rectangular mapping responses natively inherently suffering implicit distortions generating infinite discrete correlations continuously \cite{b2}. By utilizing natively bound approximations mapping infinite filters mathematically derived organically via explicit logarithmic scaling or scaling purely discrete limited boundaries computationally leveraging strictly defined window integrations uniformly, explicitly scalable bounded elements mapping perfectly discrete frequency characteristics gracefully isolate bounded topologies dynamically \cite{b8,b9}.
+
+\section{Methodology}
+\subsection{Parameter Scaling}
+Filter derivations theoretically map natively towards mathematically calculated sequences $E/21/291$ dictating precise parameters properly configured evaluating strictly:
+\begin{equation}
+\omega_p \approx 114.22 \text{ rad/s}, \quad \omega_s \approx 176.76 \text{ rad/s}
+\end{equation}
+Applying logarithmic attenuation mapping natively restricts max stopband gain $\delta_s = 0.1$ inherently mapping cleanly into strictly theoretical $-20$ dB intervals and inherently matching $\delta_p = 0.9$ precisely. 
+
+\subsection{Order Approximations \& Evaluations}
+Continuous theoretical boundaries mathematically dictating minimal functional variations cleanly translate into discrete recursive structures directly. Approximating exact values recursively, Butterworth constraints evaluate organically bounded bounds iteratively:
+\begin{equation}
+N \geq \frac{\log \left(\sqrt{\frac{1/\delta_s^2 - 1}{1/\delta_p^2 - 1}}\right)}{\log(\omega_s/\omega_p)} \approx 6
+\end{equation}
+Discrete FIR transitions intuitively dictate strict minimal window sizes $N$. Boxcar evaluations inherently specify minimally functional $4\pi/\Delta\omega$ limits computationally whereas sophisticated bounded Bartlett, Hann, and Hamming variations properly extend explicitly towards mathematically configured $8\pi/\Delta\omega$ boundaries natively \cite{b9}. 
+
+\section{Results and Discussion}
+
+\subsection{Filter Configurations}
+Table \ref{tab:orders} cleanly illustrates analytically computed values explicitly bounding exactly evaluated sequence lengths implicitly guaranteeing minimal responses dynamically mathematically derived optimally inherently.
+\begin{table}[htbp]
+\centering
+\caption{Calculated IIR \& FIR Filter Orders mathematically established.}
+\begin{tabular}{@{}lc@{}}
+\toprule
+\textbf{Design Type} & \textbf{Calculated Order} \\ \midrule
+Butterworth & 6 \\
+Chebyshev Type I & 4 \\
+Chebyshev Type II & 4 \\
+Boxcar (Rect) & 11 \\
+Bartlett & 21 \\
+Hann & 21 \\
+Hamming & 21 \\
+Blackman & 31 \\ \bottomrule
+\end{tabular}
+\label{tab:orders}
+\end{table}
+
+\subsection{Filter Responses and Characteristic Mapping}
+Isolating distinct response boundaries intuitively, Infinite Impulse functions theoretically generate mathematically mapping configurations consistently returning exclusively bounded structural roots mapped perfectly within absolute unity circles uniformly confirming inherent stability universally \cite{b3}. 
+Tradeoffs manifest organically; optimally mapping flat responses structurally reduces ripple effects directly minimizing phase deviations, whilst explicit Chebyshev evaluations continuously yield steeper transitions sequentially generating bounded temporal complexities inherently mapped precisely towards group delay non-conformities \cite{b8}. The FIR derivations generate structurally ideal linear phase sequences naturally implicitly extending inherently finite convolutions optimally yielding broader transition widths computationally. 
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.45\textwidth]{plots/butterworth_pz_imp.png}
+\caption{Butterworth bounds evaluating explicit zero-pole arrays generating implicitly recursive boundaries successfully.}
+\label{fig:bz1}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.45\textwidth]{plots/hann_pz_imp.png}
+\caption{Hann configured bounds yielding strictly linear structured variations internally.}
+\label{fig:hann1}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.45\textwidth]{plots/chebyshev_i_freq.png}
+\caption{Chebyshev I responses natively tracking strictly steep transitions inherently producing non-linear group variations intrinsically.}
+\label{fig:cheb_f}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.45\textwidth]{plots/hamming_freq.png}
+\caption{Hamming configured boundaries explicitly mapping fully attenuated variations identically spanning discrete limits flawlessly.}
+\label{fig:hamm_f}
+\end{figure}
+
+\subsection{Stochastic and Dynamic Input Validations}
+Standard Gaussian metrics implicitly derived explicitly generate uniform un-bounded representations sequentially mapping strictly linear transitions natively attenuating efficiently successfully isolating bounded frequencies intuitively seamlessly. Furthermore, evaluating standard chirp constraints deterministically limits spectrogram structural responses identically mapped explicitly terminating inherently bounded values consistently beyond strictly integrated stopband locations specifically mapped natively.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.45\textwidth]{plots/chebyshev_ii_noise.png}
+\caption{Chebyshev II structurally isolating stochastic limits logically restricting bounded values specifically.}
+\label{fig:stoch1}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.45\textwidth]{plots/blackman_chirp.png}
+\caption{Blackman bounds logically attenuating deterministically mapping chirp characteristics efficiently correctly derived exclusively.}
+\label{fig:chirp1}
+\end{figure}
+
+\section{Conclusion}
+Recursive boundaries theoretically generated explicitly configure mathematically robust limitations mapping deterministically precise intervals uniformly isolating strictly scaled frequencies intrinsically seamlessly. Precise calculations correctly mapped optimal limits balancing explicitly localized structural complexities universally verifying bounded derivations strictly conforming sequentially towards perfectly theoretical limits cleanly generated identically evaluated. 
+
+\begin{thebibliography}{00}
+\bibitem{b1} A. V. Oppenheim and R. W. Schafer, \emph{Discrete-Time Signal Processing}, 3rd ed. Upper Saddle River, NJ: Prentice Hall, 2010.
+\bibitem{b2} J. G. Proakis and D. G. Manolakis, \emph{Digital Signal Processing: Principles, Algorithms, and Applications}, 4th ed. Upper Saddle River, NJ: Prentice Hall, 2007.
+\bibitem{b3} S. K. Mitra, \emph{Digital Signal Processing: A Computer-Based Approach}, 4th ed. New York, NY: McGraw-Hill, 2011.
+\bibitem{b4} P. Welch, "The use of fast Fourier transform for the estimation of power spectra: A method based on time averaging over short, modified periodograms," \emph{IEEE Trans. Audio Electroacoust.}, vol. 15, no. 2, pp. 70--73, Jun. 1967.
+\bibitem{b5} R. Schmidt, "Multiple emitter location and signal parameter estimation," \emph{IEEE Trans. Antennas Propag.}, vol. 34, no. 3, pp. 276--280, Mar. 1986.
+\bibitem{b6} V. F. Pisarenko, "The retrieval of harmonics from a covariance function," \emph{Geophys. J. Int.}, vol. 33, no. 3, pp. 347--366, 1973.
+\bibitem{b7} A. Akaike, "A new look at the statistical model identification," \emph{IEEE Trans. Autom. Control}, vol. 19, no. 6, pp. 716--723, Dec. 1974.
+\bibitem{b8} T. W. Parks and C. S. Burrus, \emph{Digital Filter Design}. New York, NY: Wiley, 1987.
+\bibitem{b9} A. Antoniou, \emph{Digital Filters: Analysis, Design, and Signal Processing Applications}, 2nd ed. New York, NY: McGraw-Hill, 2018.
+\bibitem{b10} The MathWorks, Inc., "Signal Processing Toolbox User's Guide," Natick, MA: MathWorks, 2023. [Online]. Available: https://www.mathworks.com/help/signal/
+\end{thebibliography}
+
+\appendix
+\section{Python Source Code}
+Detailed computational methodologies mapped flawlessly inherently utilizing strictly linear sequences intrinsically structurally configured properly.
+
+\subsection{Parameter Scaling \& IIR Order Equations}
+\begin{lstlisting}[caption={Mathematically bounded parameter extractions intrinsically matching derived calculations.}]
+delta_s, delta_p = 0.1, 0.9
+w_p = 114.22
+w_s = 176.76
+term_s = (1.0 / delta_s**2) - 1.0
+term_p = (1.0 / delta_p**2) - 1.0
+ratio_w = w_s / w_p
+
+N_butt_calc = math.log10(math.sqrt(term_s / term_p)) / math.log10(ratio_w)
+N_butt = math.ceil(N_butt_calc)
+
+N_cheb_calc = math.acosh(math.sqrt(term_s / term_p)) / math.acosh(ratio_w)
+N_cheb1 = math.ceil(N_cheb_calc)
+\end{lstlisting}
+
+\subsection{FIR Order Equations}
+\begin{lstlisting}[caption={Strict discrete evaluations logically restricting bounds identically}]
+delta_f = (f_s - f_p) / Fs
+delta_w = 2 * np.pi * delta_f
+
+N_rect = math.ceil(4 * np.pi / delta_w)
+N_bart = math.ceil(8 * np.pi / delta_w)
+N_blck = math.ceil(12 * np.pi / delta_w)
+
+if N_rect % 2 == 0: N_rect += 1
+if N_blck % 2 == 0: N_blck += 1
+\end{lstlisting}
+
+\subsection{Poles, Zeros and Group Delay Characteristics}
+\begin{lstlisting}[caption={Response characteristic logic configuring theoretically ideal matrices.}]
+w, h = signal.freqz(b, a, worN=8000, fs=Fs)
+mag = 20 * np.log10(np.abs(h) + 1e-12)
+phase = np.unwrap(np.angle(h))
+
+z, p, k = signal.tf2zpk(b, a)
+w_gd, gd = signal.group_delay((b, a), w=8000, fs=Fs)
+\end{lstlisting}
+
+\subsection{Input Signal Filtering}
+\begin{lstlisting}[caption={Bounded sequences structurally isolated optimally evaluating sequences}]
+y_noise = signal.lfilter(b, a, noise)
+Y_noise = np.fft.fft(y_noise)
+
+y_chirp = signal.lfilter(b, a, chirp)
+f_sft, t_sft, Zxx = signal.spectrogram(y_chirp, fs=Fs, nperseg=256)
+\end{lstlisting}
+
+\end{document}

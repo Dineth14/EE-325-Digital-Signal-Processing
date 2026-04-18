@@ -1,0 +1,210 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{listings}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\lstset{
+  language=Python,
+  basicstyle=\ttfamily\scriptsize,
+  keywordstyle=\color{blue}\bfseries,
+  commentstyle=\color{gray}\itshape,
+  stringstyle=\color{red},
+  numberstyle=\tiny\color{gray},
+  numbers=left,
+  stepnumber=1,
+  breaklines=true,
+  frame=single,
+  captionpos=b,
+  tabsize=4
+}
+
+\begin{document}
+
+\title{EE 325 Digital Signal Processing: Lab 01 Frequency Estimation\\}
+
+\author{\IEEEauthorblockN{Student Name}
+\IEEEauthorblockA{\textit{Dept. of Electrical \& Electronic Engineering} \\
+\textit{University of Peradeniya}\\
+Sri Lanka \\
+E/21/291}
+}
+
+\maketitle
+
+\begin{abstract}
+This report comprehensively outlines the methodologies and derivations implemented for fundamental frequency estimation mechanisms utilizing parametric and non-parametric estimators. Multiple periodic discrete-time signals infused within Gaussian white noise boundaries were generated organically based on localized registration configurations. Analyzing discrete transitions, transformations including DFT processing, computationally un-biased Autocorrelations coupled with generalized Periodograms were thoroughly assessed yielding structural observations. Advanced multi-spectral decomposition architectures ranging from purely analytical Auto-Regressive (AR) Least-Squares configurations to sophisticated Subspace processing like Pisarenko Harmonic Decomposition (PHD) matrices constrained tightly to $7 \times 7$ bounds successfully identified precisely infused deterministic fundamental characteristics inside corrupted sequences. Ultimately, accurate numerical and qualitative distinctions validating trade-offs inherent intrinsically within theoretical spectrums vs localized data evaluations are rigorously established.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Discrete Fourier Transform, Periodogram, Pisarenko Harmonic Decomposition, Autoregressive Modeling, Power Spectral Density.
+\end{IEEEkeywords}
+
+\section{Introduction}
+Modern frequency parameter estimation involves mapping deterministically structured harmonic topologies submerged under stochastic boundaries onto highly scalable estimators \cite{b1}. Traditional parametric designs rely conventionally on transformations natively translating infinite discrete representations efficiently into Fourier bounds explicitly \cite{b2}. However, limited temporal spans heavily dictate intrinsic leakage factors driving alternative approaches encompassing linear auto-regressive structures and mathematically optimized data-matrices. Standardizing computational sequences leveraging highly structured Autocorrelation mappings natively resolves closely bounded frequency elements explicitly \cite{b4,b5}.
+
+\section{Methodology}
+\subsection{Signal Construction}
+Two primary test sequences were stochastically generated spanning $0 \leq t \leq 100$ seconds uniformly sampled precisely at $F_s = 200$ Sa/s. 
+Generating frequencies based natively on identifier variations sequentially instantiated corresponding frequencies at $f_1 = 12$ Hz, $f_2 = 39$ Hz, and $f_3 = 71$ Hz.
+\begin{equation}
+x_1(t) = \sin(2\pi \cdot 12 t) + \cos(2\pi \cdot 39 t) + \sin(2\pi \cdot 71 t) + \nu(t) 
+\end{equation}
+A concurrent linear sequential chirp sequence exhibiting dynamically varying frequencies was generated concurrently:
+\begin{equation}
+x_2(t) = \sin\left(20\pi t + 2\pi \frac{t^2}{150}\right) + \nu(t) 
+\end{equation}
+where $\nu(t)$ corresponds to standard Unit Gaussian models naturally simulating broadband random noise bounds.
+
+\subsection{Parameter Estimations}
+Standard Fast Fourier Transformations natively isolated primary periodic coefficients explicitly \cite{b1,b2}. Advanced mapping subsequently instantiated standard periodograms deterministically derived evaluating strictly bounded symmetrical biased autocorrelation series explicitly derived computationally ensuring direct non-parametric spectral density correlations \cite{b4}. Subspace mapping integrated rigorously bounded $M = 7$ dimensions accurately deriving fundamental harmonic pseudo-spectrums processing natively isolated minimal eigenvalues exclusively associated to Pisarenko harmonic metrics \cite{b6}. Linear predictive elements processed implicitly via explicitly generated delayed correlation vectors leveraging Least Squares solutions directly validated autoregressive architectures mapping mathematically bounded recursive filter spectrums explicitly \cite{b7}.
+
+\section{Results and Discussion}
+
+\subsection{Task 1 \& 2: Time Domain Distribution Analysis}
+Analyzing structural configurations confirms highly bound variations. The explicit white sequence logically correlates to organically shaped normal distribution patterns observed directly conforming to typical expectations bounded tightly across zero limits.
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.45\textwidth]{plots/task2.png}
+\caption{Time domain structural patterns and Histogram probabilistic density mapping confirming stochastic distributions spanning simulated domains.}
+\label{fig:time_dist}
+\end{figure}
+
+\subsection{Task 3 \& 4: Spectral Densities and Spectrogram}
+Deriving explicit spectra from Fig. \ref{fig:dft} properly aligns exact deterministic spectral spikes isolating specifically localized values correlating efficiently to computationally generated sequence intervals $12$ Hz, $39$ Hz, and $71$ Hz natively respectively. Spectrogram mapping subsequently traces explicitly broadband temporal sweeps natively tracking evolving deterministic characteristics intrinsically coupled to deterministic chirps explicitly simulating proportional transitions. 
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.45\textwidth]{plots/task3.png}
+\caption{DFT bounds tracking explicit peaks inherently correlated to fundamental sinusoidal attributes.}
+\label{fig:dft}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.45\textwidth]{plots/task4.png}
+\caption{Spectrogram representations inherently mapping linear variations natively tracking chirp domains properly.}
+\label{fig:spect}
+\end{figure}
+
+\subsection{Task 5 \& 6: Autocorrelation Derivations}
+Fundamentally derived periods natively evaluated explicitly yielded standard $1$ Hz metrics matching mathematical $1 / \text{GCD}(12, 39, 71)$ explicitly. Implementing explicit theoretical power-signal characteristics effectively un-biased internal bounded distortions inherently observed universally within native built-in biased convolutions typically evaluated natively explicitly across finite bounds uniformly.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.45\textwidth]{plots/task5.png}
+\caption{Autocorrelation evaluated iteratively processing mathematically unbiased derivations properly mapping discrete intervals natively.}
+\label{fig:acss1}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.45\textwidth]{plots/task6.png}
+\caption{Autocorrelation derived implicitly utilizing explicitly bounded temporal chirp characteristics appropriately.}
+\label{fig:acss2}
+\end{figure}
+
+\subsection{Task 7: Periodogram Configurations}
+Mapping explicit discrete integrations inherently correlates natively bounded standard periodograms efficiently evaluating implicit Fourier characteristics processing strictly mathematically bounded standard biased Autocorrelations organically ensuring explicitly scalable discrete density profiles explicitly mapped directly across continuous boundaries.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.45\textwidth]{plots/task7.png}
+\caption{Periodograms evaluating explicitly configured temporal mapping natively generating discrete linear magnitude representations properly.}
+\label{fig:period}
+\end{figure}
+
+\subsection{Task 8, 9, \& 10: Subspace and AR Modeling}
+Evaluations directly utilizing precisely generated Autocorrelation variations explicitly constrained symmetrically towards $7 \times 7$ bounds accurately resolved deterministic harmonic variations mapping purely intrinsic structural patterns natively aligning minimal eigenvalues validating exact Pisarenko derivations explicitly \cite{b6}. Least squares variations structurally isolated efficiently processed explicit recursive bounds logically establishing explicitly predictive representations smoothly capturing purely explicit peak approximations \cite{b7}. Both successfully detected frequencies near 12, 39, and 71 Hz.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.45\textwidth]{plots/task9.png}
+\caption{Pisarenko Harmonic pseudo-spectrums resolving minimal eigenvalue derived explicit density profiles intrinsically minimizing variance heavily natively.}
+\label{fig:music}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.45\textwidth]{plots/task10.png}
+\caption{Least-Squares derived autoregressive variations naturally predicting explicitly resolved density profiles seamlessly.}
+\label{fig:ar}
+\end{figure}
+
+
+\section{Conclusion}
+Sophisticated estimation protocols intrinsically map purely sequential periodic patterns translating non-parametric representations effectively overcoming localized sampling limitations smoothly. Precise subspace derivations properly minimized noise dimensions structurally bounding computationally optimized bounds generating purely harmonic mappings successfully while Least squares optimizations recursively tracking exact linear sequences flawlessly established optimal temporal predictors natively mapping identical variations directly explicitly.
+
+\begin{thebibliography}{00}
+\bibitem{b1} A. V. Oppenheim and R. W. Schafer, \emph{Discrete-Time Signal Processing}, 3rd ed. Upper Saddle River, NJ: Prentice Hall, 2010.
+\bibitem{b2} J. G. Proakis and D. G. Manolakis, \emph{Digital Signal Processing: Principles, Algorithms, and Applications}, 4th ed. Upper Saddle River, NJ: Prentice Hall, 2007.
+\bibitem{b3} S. K. Mitra, \emph{Digital Signal Processing: A Computer-Based Approach}, 4th ed. New York, NY: McGraw-Hill, 2011.
+\bibitem{b4} P. Welch, "The use of fast Fourier transform for the estimation of power spectra: A method based on time averaging over short, modified periodograms," \emph{IEEE Trans. Audio Electroacoust.}, vol. 15, no. 2, pp. 70--73, Jun. 1967.
+\bibitem{b5} R. Schmidt, "Multiple emitter location and signal parameter estimation," \emph{IEEE Trans. Antennas Propag.}, vol. 34, no. 3, pp. 276--280, Mar. 1986.
+\bibitem{b6} V. F. Pisarenko, "The retrieval of harmonics from a covariance function," \emph{Geophys. J. Int.}, vol. 33, no. 3, pp. 347--366, 1973.
+\bibitem{b7} A. Akaike, "A new look at the statistical model identification," \emph{IEEE Trans. Autom. Control}, vol. 19, no. 6, pp. 716--723, Dec. 1974.
+\bibitem{b8} T. W. Parks and C. S. Burrus, \emph{Digital Filter Design}. New York, NY: Wiley, 1987.
+\bibitem{b9} A. Antoniou, \emph{Digital Filters: Analysis, Design, and Signal Processing Applications}, 2nd ed. New York, NY: McGraw-Hill, 2018.
+\bibitem{b10} The MathWorks, Inc., "Signal Processing Toolbox User's Guide," Natick, MA: MathWorks, 2023. [Online]. Available: https://www.mathworks.com/help/signal/
+\end{thebibliography}
+
+\appendix
+\section{Python Source Code}
+The inherently structured computational verifications processing precisely mapped algorithmic implementations natively mapped completely throughout. Let the following explicitly reference Python sources tracking identical execution variations explicitly.
+
+\subsection{Data Generation and Dependencies}
+\begin{lstlisting}[caption={Imports and Generation Configurations dynamically structured natively}]
+import numpy as np
+import matplotlib.pyplot as plt
+import scipy.signal as signal
+from scipy.linalg import toeplitz, eigh
+
+np.random.seed(42)
+Fs = 200
+t = np.arange(0, int(100*Fs)) / Fs
+nu = np.random.normal(0, 1, len(t))
+
+x1 = np.sin(2 * np.pi * 12 * t) + np.cos(2 * np.pi * 39 * t) + np.sin(2 * np.pi * 71 * t) + nu
+x2 = np.sin(20 * np.pi * t + 2 * np.pi * (t**2 / 150)) + nu
+\end{lstlisting}
+
+\subsection{Periodograms Mapping ACF Transitions}
+\begin{lstlisting}[caption={Periodogram derived explicitly from natively bounded biased configurations}]
+rxx1_raw = signal.correlate(x1, x1, mode='full')
+rxx1_biased = rxx1_raw / len(x1)
+Pxx_den1_custom = np.abs(np.fft.fft(np.fft.ifftshift(rxx1_biased)))
+f_p1_custom = np.fft.fftfreq(len(rxx1_biased), 1/Fs)
+\end{lstlisting}
+
+\subsection{Pisarenko Harmonic Minimum Variants}
+\begin{lstlisting}[caption={Pisarenko configurations evaluating precise boundaries logically established structurally.}]
+M = 7
+r = rxx1_unbiased[center:center+M] 
+R = toeplitz(r)
+eigenvalues, eigenvectors = eigh(R)
+E_min = eigenvectors[:, 0]
+w_phd, h_phd = signal.freqz(E_min, 1, worN=1000, fs=Fs)
+P_phd = 1.0 / (np.abs(h_phd)**2 + 1e-12)
+\end{lstlisting}
+
+\subsection{AR Model Optimization Parameters}
+\begin{lstlisting}[caption={Standard Least Squares predicting bounded matrices iteratively.}]
+p_ar = 10 
+N_samples = len(x1)
+A = np.zeros((N_samples - p_ar, p_ar))
+b_vec = x1[p_ar:]
+for i in range(p_ar):
+    A[:, i] = x1[p_ar - 1 - i : N_samples - 1 - i]
+Theta = np.linalg.solve(A.T @ A, A.T @ b_vec)
+a_ar = np.concatenate(([1], -Theta))
+w_ar, h_ar = signal.freqz(1, a_ar, worN=1000, fs=Fs)
+\end{lstlisting}
+
+\end{document}

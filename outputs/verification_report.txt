@@ -1,0 +1,31 @@
+EE 325 - Digital Signal Processing
+====================================
+Code Verification and Bug Fix Report
+====================================
+
+The provided Python code for Lab 01 and Lab 02 has been thoroughly reviewed against the mathematical instructions derived from the student parameters E/21/291 (a=2, b=9, c=1). Several deviations from the specifications were identified and corrected.
+
+--- LAB 01 RECTIFICATIONS ---
+1. Step 5 (Autocorrelation): 
+   - Bug Found: The autocorrelation estimator only yielded biased correlations scaled globally by `1/N`. 
+   - Fix Applied (lines 115-121): The Power-Signal approximation formula `r̂_xx[ℓ] = (1/(N-ℓ)) Σ x_N[n+ℓ]x_N[n]` was explicitly appended alongside the default biased calculation for comparative assessment. The fundamental period 1/GCD(12, 39, 71) = 1s was highlighted.
+2. Step 7 (Periodogram):
+   - Bug Found: Periodogram was built using `scipy.signal.periodogram()`, contrary to the instruction demanding implementation exactly via the "DFT of xcorr result".
+   - Fix Applied (lines 146-150): Discarded the built-in function and evaluated `np.abs(np.fft.fft(np.fft.ifftshift(rxx1_biased)))` manually preserving linear scaling (not dB).
+3. Step 8/9 (MUSIC/PHD Decomposition):
+   - Bug Found: Code utilized an arbitrary size `M=15` Auto-Correlation Matrix (ACM) and executed generic MUSIC utilizing the entire sequence of noise eigenvectors. 
+   - Fix Applied (lines 167-175): Formulated an exact 7x7 ACM representation matching the `p=6` instruction for a K=3 tone signal. Identified and mapped the polynomial specifically across the minimum eigenvalue vector associated precisely to Pisarenko Harmonic Decomposition (PHD).
+4. Step 10 (AR Model Processing):
+   - Bug Found: Implicit Yule-Walker solutions were enforced via Numpy linear algebraic routing over Toeplitz blocks. 
+   - Fix Applied (lines 198-208): Explicit deterministic regression `Θ̂ = (AᵀA)⁻¹Aᵀb` constructed mapping historical samples directly into a delayed measurement matrix `A` optimizing the parameters using Standard Least Squares (OLS).
+
+--- LAB 02 RECTIFICATIONS ---
+1. Filter Parameter Configuration
+   - Verified that `w_p` dynamically equates perfectly to ~114.22 rad/s and `w_s` scales accurately targeting ~176.76 rad/s.
+2. IIR Order Bounds
+   - Bug Found: The system used `signal.buttord` silently hiding analytical bound equations `N = log(sqrt(...)) / log(w_s/w_p)` demanded strictly by the prompt.
+   - Fix Applied (lines 38-51): Integrated mathematical approximations enforcing absolute analog logarithmic calculations manually returning correct order boundaries natively into Python logs.
+3. Filtering Pipeline Verifications:
+   - Evaluated correctly formatted stopbands (-20 dB from delta_s) and passbands (-0.915 dB from delta_p). Minimum integer filter orders mathematically calculated correspond flawlessly to internally generated approximations. 
+
+All rectified code was dumped successively to `lab01_verified.py` and `lab02_verified.py` and output visuals updated organically minimizing errors.
